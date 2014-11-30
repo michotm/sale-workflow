@@ -25,11 +25,13 @@
     'version': '1.0',
     'category': 'Generic Modules',
     'description': """
-        Allows Sale Order cancellation and Manufacturing Order cancellation in the same time.
+        Allows Sale Order cancellation and Manufacturing Order cancellation in
+        the same time.
     """,
     'author': 'Akretion',
     'website': 'http://akretion.com',
     'depends': ['sale_mrp_link', 'sale_cancel_picking'],
+    'test': ['test/mrp_cancel_test.yml'],
     'installable': True,
     'auto_install': False,
     'application': False,
