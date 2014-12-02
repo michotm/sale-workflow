@@ -79,7 +79,6 @@ class SaleOrder(orm.Model):
                 if able_to_cancel:
                     mo.picking_id.action_cancel()
                 order.add_cancel_log(message, important=important)
-
             able_to_cancel, message, important =\
                 self._can_cancel_mo(cr, uid, mo, context=context)
             if able_to_cancel:
