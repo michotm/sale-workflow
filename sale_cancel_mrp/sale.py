@@ -60,7 +60,7 @@ class SaleOrder(orm.Model):
             pass
         if mo.state != 'done':
             able_to_cancel = True
-            message = _("MO %s canceled")
+            message = _("MO %s canceled") % mo.name
         else:
             important = True
             message = _("Fail to cancel the Manufacturing Order %s as it's"
@@ -73,11 +73,12 @@ class SaleOrder(orm.Model):
             ('sale_order_id', '=', order.id),
             ], context=context)
         for mo in mrp_prod_obj.browse(cr, uid, mo_ids, context=context):
-            able_to_cancel, message, important =\
-                self._can_cancel_mo_internal_move(cr, uid, mo, context=context)
-            if able_to_cancel:
-                mo.picking_id.action_cancel()
-            order.add_cancel_log(message, important=important)
+            if mo.picking_id:
+                able_to_cancel, message, important =\
+                    self._can_cancel_mo_internal_move(cr, uid, mo, context=context)
+                if able_to_cancel:
+                    mo.picking_id.action_cancel()
+                order.add_cancel_log(message, important=important)
 
             able_to_cancel, message, important =\
                 self._can_cancel_mo(cr, uid, mo, context=context)
