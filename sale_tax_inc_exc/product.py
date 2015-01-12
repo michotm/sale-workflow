@@ -105,6 +105,6 @@ class ProductProduct(orm.Model):
         if context is None:
             context = {}
         super(ProductProduct, self).write(cr, uid, ids, vals, context=context)
-        if not context.get('update_price'):
+        if not context.get('update_price') and vals.get('list_price_tax_inc', False):
             self._update_price(cr, uid, ids, context=context)
         return True
