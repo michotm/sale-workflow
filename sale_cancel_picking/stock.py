@@ -14,7 +14,7 @@ from openerp import models, api, exceptions, _
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
-    @api.one
+    @api.multi
     def can_cancel_picking_out(self):
         """
         Method that returns if it's possible or not to cancel the picking_out

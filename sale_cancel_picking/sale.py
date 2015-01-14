@@ -14,7 +14,7 @@ from openerp import models, fields, api, exceptions
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    cancel_log = fields.HTML()
+    cancel_log = fields.Html()
 
     @api.one
     def _cancel_linked_record(self):
@@ -37,13 +37,13 @@ class SaleOrder(models.Model):
         """
         if not message:
             return True
-        for order in self.browse(self.env.ids):
+        for order in self:
             log = order.cancel_log or ""
             if important:
                 log += '<p style="color: red">%s</p>'
             else:
                 log += '<p>%s</p>'
-            self.cancel_log = log.message
+            self.cancel_log = log % message
         return True
 
     @api.one
