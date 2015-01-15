@@ -36,13 +36,15 @@ class SaleOrder(models.Model):
         act_obj = self.env['ir.actions.act_window']
         mrp_prod_obj = self.env['mrp.production']
 
-        result = mod_obj.get_object_reference('mrp', 'mrp_production_action')
+        result = mod_obj.get_object_reference(
+            'mrp', 'action_view_manufacturing_order')
         id = result and result[1] or False
-        result = act_obj.browse(id)[0]
-        list_mo = mrp_prod_obj.search([('sale_order_id', 'in', self.ids)])
-        mo_ids = []
-        for mo in list_mo:
-            mo_ids.append(mo.id)
-        result['domain'] = "[('id', 'in', [" + \
-            ','.join(map(str, mo_ids)) + "])]"
+        if id:
+            result = act_obj.browse(id)[0]
+            list_mo = mrp_prod_obj.search([('sale_order_id', 'in', self.ids)])
+            mo_ids = []
+            for mo in list_mo:
+                mo_ids.append(mo.id)
+            result['domain'] = "[('id', 'in', [" + \
+                ','.join(map(str, mo_ids)) + "])]"
         return result

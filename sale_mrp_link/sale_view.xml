@@ -15,9 +15,16 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='action_cancel']" position="after">
-                    <button name="action_view_manufacturing_order" string="See Manufacturing Orders" type="object" groups="base.group_user"/>
+                    <button name="%(action_view_manufacturing_order)d" string="See Manufacturing Orders" type="action" groups="base.group_user"/>
                 </xpath>
             </field>
+        </record>
+
+        <record id="action_view_manufacturing_order" model="ir.actions.act_window">
+            <field name="context">{'search_default_sale_order_id': [active_id]}</field>
+            <field name="name">Manufacturing Orders</field>
+            <field name="res_model">mrp.production</field>
+            <field name="view_id" ref="mrp.mrp_production_tree_view"/>
         </record>
 
     </data>
