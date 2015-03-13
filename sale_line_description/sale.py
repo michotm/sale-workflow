@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+#
 #
 #    Copyright (C) 2013 Agile Business Group sagl
 #    (<http://www.agilebg.com>)
@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#
 
 from openerp.osv import orm
 
@@ -46,16 +46,16 @@ class sale_order_line(orm.Model):
                 cr, uid, 'sale_line_description',
                 'group_use_product_description_per_so_line'
             )
-            if ref and len(ref) > 1 and ref[1]:
+            if ref and len(ref) > 1 and ref[1] and not flag:
                 group_id = ref[1]
                 if group_id in user_groups:
                     product_obj = self.pool.get('product.product')
                     product = product_obj.browse(
                         cr, uid, product_id, context=context)
                     if (
-                        product
-                        and product.description
-                        and 'value' in res
+                        product and
+                        product.description and
+                        'value' in res
                     ):
-                        res['value']['name'] = product.description
+                        res['value']['name'] = product.description_sale
         return res

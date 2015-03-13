@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+#
 #
 #    Author: Guewen Baconnier
 #    Copyright 2013 Camptocamp SA
@@ -17,11 +17,11 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#
 
 {'name': 'Sale Cancel Reason',
  'version': '1.0',
- 'author': 'Camptocamp',
+ 'author': "Camptocamp,Odoo Community Association (OCA)",
  'category': 'Sale',
  'license': 'AGPL-3',
  'complexity': 'normal',

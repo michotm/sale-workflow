@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+#
 #
 #    Copyright (C) 2013 Agile Business Group sagl
 #    (<http://www.agilebg.com>)
@@ -18,19 +18,20 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#
 {
     'name': "Sale line description",
-    'version': '0.1',
+    'version': '1.0',
     'category': 'Sales Management',
     'description': """
-This module allows to use only the product description on the sale order lines.
-To do so, the user has to belong to group_use_product_description_per_so_line.
-This is possible by selecting the related option in the following menu:
+This module allows to use only the product sale description on the sale order
+lines. To do so, the user has to belong to
+group_use_product_description_per_so_line. This is possible by selecting the
+related option in the following menu:
 
 Settings --> Configuration --> Sale --> Sale Features
     """,
-    'author': 'Agile Business Group',
+    'author': "Agile Business Group,Odoo Community Association (OCA)",
     'website': 'http://www.agilebg.com',
     'license': 'AGPL-3',
     "depends": [

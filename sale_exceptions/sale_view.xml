@@ -24,6 +24,8 @@
                     <group colspan="4" col="2">
                         <field name="name"/>
                         <field name="description"/>
+                        <field name="company_id"
+                               groups="base.group_multi_company"/>
                     </group>
                     <group col="4" colspan="4" groups="base.group_sale_manager">
                         <field name="active"/>
@@ -80,6 +82,17 @@
             <field name="name">sale_exceptions.view_order_tree</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name="main_exception_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_quotation_tree" model="ir.ui.view">
+            <field name="name">sale_exceptions.view_quotation_tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
             <field name="arch" type="xml">
                 <field name="state" position="after">
                     <field name="main_exception_id"/>

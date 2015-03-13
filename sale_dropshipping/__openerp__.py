@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+#
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 20010 Akretion LDTA (<http://www.akretion.com>).
@@ -18,21 +18,24 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#
 {"name": "Sale Dropshipping",
- "version": "1.0",
- "author": "Akretion",
+ "version": "1.1.1",
+ "author": "Akretion,Odoo Community Association (OCA)",
  "website": "http://www.openerp.com",
  "category": "Generic Modules/Purchase",
  "depends": ["purchase",
+             "purchase_group_hooks",
              "sale_stock"],
  "description": """
-Makes it better to deal with purchases with known sale schemes, specially the following case:
+Makes it better to deal with purchases with known sale schemes, specially the
+following case:
 1) normal
 2) direct delivery (also called drop shipping)
 3) direct invoice
 4) direct delivery and direct invoice
-See the attached diagram in images/purchase_to_sale.png to see the difference between those flows.
+See the attached diagram in images/purchase_to_sale.png to see the difference
+between those flows.
 
 In all those specific MTO (by opposition of MTS) cases,
 it will link the sale order line and the purchase order lines together.
@@ -46,17 +49,24 @@ You can also tell if product suppliers accept drop shipping or not.
 line has more products than the virtual quantity available,
 then it selects drop shipping by default.
 
-In the out going product list view, you can filter in or out drop shipping picking.
+In the out going product list view, you can filter in or out drop shipping
+picking.
 
-TODO: eventually it might be interesting to do a chained move from supplier to internal location and
+TODO: eventually it might be interesting to do a chained move from supplier to
+internal location and
 from internal location to customer instead of supplier o customer directly.
 This would enable moves to properly generate accounting moves
  in the stock journal for better tracking.
     """,
  "init_xml": [],
  "demo_xml": [],
- "test": [],
- "update_xml": ["purchase_view.xml", "sale_view.xml", "product_view.xml", "stock_view.xml"],
+ "test": ['test/test_sale_policy_procurement.yml',
+          ],
+ "update_xml": [
+     "purchase_view.xml",
+     "sale_view.xml",
+     "product_view.xml",
+     "stock_view.xml"],
  'images': ['images/purchase_to_sale.png'],
  'installable': True,
  'certificate': None,
