@@ -47,10 +47,8 @@ class SaleLineGeneratorFrom(http.Controller):
     <link href="/sale_generator_web/static/src/css/sale_generator0.css" rel="stylesheet " type="text/css" >
     <script src="/sale_generator_web/static/src/js/bootstrap.js"></script>
     <script src="/sale_generator_web/static/src/js/jquery.js"></script> 
-    <style>
-    </style>
+  
   </head>
-
 <body>
  <div class="container">
       <nav class="navbar navbar-inverse">
@@ -97,17 +95,18 @@ class SaleLineGeneratorFrom(http.Controller):
   </body>
 </html>
 	"""
-        return (temp.format(self._css(),valeur))
+        return (temp.format(valeur))
 
 
-    @http.route('/sale_generator', type="http")
+    @http.route('/sale_generator/', type="http")
     def clicbutton(self,**kw):
         res_partner_obj = http.request.env['res.partner']
+	print '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 	generator_obj = http.request.env['sale.generator']
 	generator = generator_obj.browse(int(kw['id']))
         vals=self._prepare_partner_vals(kw['nom'],kw['street'],kw['email'],kw['phone'],kw['city'],kw['state'],kw['zip'])
         partner = res_partner_obj.create(vals)
 	print partner.id
 	generator.write({'partner_ids':[(4,partner.id,0)]})
-        kw.clear()
+	import pdb; pdb.set_trace()
 	print 'kw',kw
