@@ -26,25 +26,21 @@ class SaleLineGeneratorFrom(http.Controller):
              ' partner_ids.name': name,
          }
 
-    def _css(self):
-	css="""
-	
-	"""
-	return css
+
     
    
 
     @http.route('/<int:id>/', type="http")
     def index(self,id, **kw):
-	valeur=id
-	
 	temp = """
 	<!DOCTYPE HTML>
   <html>
   <head>
     <meta charset="utf-8">
-    <link href="/sale_generator_web/static/src/css/bootstrap.css" rel="stylesheet" type="text/css" >
-    <link href="/sale_generator_web/static/src/css/sale_generator0.css" rel="stylesheet " type="text/css" >
+    <link href="/sale_generator_web/static/src/css/bootstrap.css"
+				 rel="stylesheet" type="text/css" >
+    <link href="/sale_generator_web/static/src/css/sale_generator0.css"
+				rel="stylesheet " type="text/css" >
     <script src="/sale_generator_web/static/src/js/bootstrap.js"></script>
     <script src="/sale_generator_web/static/src/js/jquery.js"></script> 
   
@@ -66,17 +62,36 @@ class SaleLineGeneratorFrom(http.Controller):
                     <p class="lead">Ajouter les informations </p>
                     <div class="panel panel-default">
                         <div class="panel-body">
-                            <form method="post" action="/sale_generator" role="form">
+                            <form method="post" action="/sale_generator"
+			    role="form">
                                 <div class="input-group">
-                                    <input type="name" name="nom" class="form-control" placeholder="Nom" required onFocus="javascript:this.value="">
-				     <input type="Email" name="email" class="form-control" placeholder="Email" required>
-				     <input type="Phone" name="phone" class="form-control" placeholder="Mobile" required>
-				     <input type="Address" name="street" class="form-control" placeholder="La Rue" required>
-				     <input type="Address" name="city" class="form-control" placeholder="La ville" required>
-				     <input type="Address" name="state" class="form-control" placeholder="Le pays" required>
-				     <input type="Address" name="zip" class="form-control" placeholder="Le code postal" required>
-                                     <input type="HIDDEN" name="id" value = {}><br>
-                                      <button class="btn btn-primary pull-right" type="submit" onclick="clicbutton()" >Enregistrer</button> 
+                                <input type="name" name="nom"
+				class="form-control"
+				placeholder="Nom"
+				required onFocus="javascript:this.value="">
+				<input type="Email" name="email"
+				class="form-control"
+				placeholder="Email" required>
+				<input type="Phone"
+				name="phone" class="form-control"
+				placeholder="Mobile" required>
+				<input type="Address" name="street"
+				class="form-control"
+				placeholder="La Rue" required>
+				<input type="Address"
+				name="city" class="form-control"
+				placeholder="La ville" required>
+				<input type="Address" name="state"
+				class="form-control"
+				placeholder="Le pays" required>
+				<input type="Address" name="zip"
+				class="form-control"
+				placeholder="Le code postal" required>
+                                <input type="HIDDEN"
+				name="id" value = {}><br>
+                                <button class="btn btn-primary pull-right"
+				type="submit"
+				onclick="clicbutton()">Enregistrer</button> 
                                 </div>
                             </form>
                         </div>
@@ -87,7 +102,8 @@ class SaleLineGeneratorFrom(http.Controller):
             
             <div class="col-md-4 col-md-offset-2 ">
                 <div class="phone">
-                    <img class="img-responsive img-rounded" src="/sale_generator_web/static/src/images/test.png">
+                    <img class="img-responsive img-rounded"
+		    src="/sale_generator_web/static/src/images/test.png">
                 </div>
             </div>
            </div>
@@ -95,18 +111,16 @@ class SaleLineGeneratorFrom(http.Controller):
   </body>
 </html>
 	"""
-        return (temp.format(valeur))
+        return (temp.format(id))
 
 
     @http.route('/sale_generator/', type="http")
     def clicbutton(self,**kw):
         res_partner_obj = http.request.env['res.partner']
-	print '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 	generator_obj = http.request.env['sale.generator']
 	generator = generator_obj.browse(int(kw['id']))
-        vals=self._prepare_partner_vals(kw['nom'],kw['street'],kw['email'],kw['phone'],kw['city'],kw['state'],kw['zip'])
+        vals=self._prepare_partner_vals(kw['nom'],kw['street'],kw['email']
+					,kw['phone'],kw['city'],
+					kw['state'],kw['zip'])
         partner = res_partner_obj.create(vals)
-	print partner.id
 	generator.write({'partner_ids':[(4,partner.id,0)]})
-	import pdb; pdb.set_trace()
-	print 'kw',kw
