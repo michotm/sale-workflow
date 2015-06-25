@@ -14,19 +14,24 @@ from osv import orm, fields
 class MrpProd(orm.Model):
     _inherit = 'mrp.production'
 
+    def _get_sale_order(self, cr, uid, move, context=None):
+        sale_id = None
+        if move.picking_id.sale_id:
+            sale_id = move.picking_id.sale_id.id
+        return sale_id
+
     def create(self, cr, uid, vals, context=None):
         if context is None:
             context = {}
         move_obj = self.pool.get('stock.move')
         if 'move_prod_id' in vals:
             move = move_obj.browse(
-                cr, uid, vals['move_prod_id'], context=context
-            )
-            if move.picking_id.sale_id:
-                vals['sale_order_id'] = move.picking_id.sale_id.id
+                cr, uid, vals['move_prod_id'], context=context)
+            sale_id = self._get_sale_order(cr, uid, move, context=context)
+            if sale_id:
+                vals['sale_order_id'] = sale_id
         return super(MrpProd, self).create(
-            cr, uid, vals, context=context
-        )
+            cr, uid, vals, context=context)
 
     _columns = {
         'sale_order_id': fields.many2one('sale.order', 'Source Sale Order'),
@@ -47,8 +52,7 @@ class SaleOrder(orm.Model):
         id = result and result[1] or False
         result = act_obj.read(cr, uid, [id], context=context)[0]
         mo_ids = mrp_prod_obj.search(
-            cr, uid, [('sale_order_id', 'in', ids)], context=context
-        )
+            cr, uid, [('sale_order_id', 'in', ids)], context=context)
         result['domain'] = "[('id', 'in', [" + \
             ','.join(map(str, mo_ids)) + "])]"
         return result
