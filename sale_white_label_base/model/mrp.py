@@ -24,4 +24,4 @@ from openerp import fields, models
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
-    white_label_id = fields.Many2one('white.label')
+    white_label_id = fields.Many2one('white.label', string='White Label')

@@ -24,7 +24,7 @@ from openerp import fields, models, api
 class ProcurementOrder(models.Model):
     _inherit = 'procurement.order'
 
-    white_label_id = fields.Many2one('white.label')
+    white_label_id = fields.Many2one('white.label', string='White Label')
 
     @api.model
     def _prepare_mo_vals(self, procurement):
@@ -36,5 +36,5 @@ class ProcurementOrder(models.Model):
     @api.multi
     def _prepare_purchase_order(self, partner):
         res = super(ProcurementOrder, self)._prepare_purchase_order(partner)
-        res = self.white_label_id.id
+        res['white_label_id'] = self.white_label_id.id
         return res

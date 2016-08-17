@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_white_label,white.label,model_white_label,base.group_user,1,0,0,0
+access_white_label_sale_user,white.label.sale.user,model_white_label,base.group_sale_salesman,1,0,0,0
+access_white_label_sale_manager,white.label.sale.manager,model_white_label,base.group_sale_manager,1,1,1,1

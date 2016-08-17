@@ -20,3 +20,7 @@
 #########################################################################
 
 from . import white_label
+from . import sale
+from . import procurement
+from . import purchase
+from . import mrp

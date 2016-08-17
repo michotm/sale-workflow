@@ -24,7 +24,10 @@ from openerp import fields, models, api
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    white_label_id = fields.Many2one('white.label', required=True)
+    white_label_id = fields.Many2one(
+        'white.label',
+        string='White Label',
+        required=True)
 
     @api.multi
     def _prepare_order_line_procurement(self, group_id=False):

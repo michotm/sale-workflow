@@ -35,3 +35,4 @@ class WhiteLabel(models.Model):
                    ('3', 'Very Urgent')],
         default='1'
     )
+    is_white_label_shop = fields.Boolean('Is White Label')
