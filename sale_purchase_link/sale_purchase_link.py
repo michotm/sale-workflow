@@ -8,47 +8,45 @@
 #
 ##############################################################################
 
-from openerp.osv import orm, fields
+from openerp import models, fields, api, exceptions, _
 
 
-class ProcurementOrder(orm.Model):
+class ProcurementOrder(models.Model):
     _inherit = 'procurement.order'
 
-    def create_procurement_purchase_order(self, cr, uid, procurement, po_vals,
-                                          line_vals, context=None):
-        if procurement.move_id and procurement.move_id.sale_line_id:
-            line_vals.update(
-                {'sale_order_id': procurement.move_id.sale_line_id.order_id.id}
-            )
-        return super(ProcurementOrder, self).create_procurement_purchase_order(
-            cr, uid, procurement, po_vals, line_vals, context=context)
+    @api.multi
+    def _prepare_purchase_order(self, partner):
+        res = super(ProcurementOrder, self)._prepare_purchase_order(partner)
+        if self.group_id:
+            sales = self.env['sale.order'].search(
+                [('procurement_group_id', '=', self.group_id.id)])
+            if len(sales) > 1:
+                raise exceptions.ValidationError(
+                    _("More than 1 sale order found for this group"))
+            res['sale_order_id'] = sales.id
+        return res
 
 
-class PurchaseOrderLine(orm.Model):
+class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
-    _columns = {
-        'sale_order_id': fields.many2one('sale.order', 'Source Sale Order'),
-    }
+
+    sale_order_id = fields.Many2one('sale.order', 'Source Sale Order')
 
 
-class SaleOrder(orm.Model):
+class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    def action_view_purchase_order(self, cr, uid, ids, context=None):
-        mod_obj = self.pool.get('ir.model.data')
-        act_obj = self.pool.get('ir.actions.act_window')
-        po_line_obj = self.pool.get('purchase.order.line')
+    @api.multi
+    def action_view_purchase_order(self):
+        model_data_obj = self.env['ir.model.data']
+        action_obj = self.pool['ir.actions.act_window']
+        po_line_obj = self.env['purchase.order.line']
 
-        result = mod_obj.get_object_reference(
-            cr, uid, 'purchase', 'purchase_form_action'
-        )
-        id = result and result[1] or False
-        result = act_obj.read(cr, uid, [id], context=context)[0]
-        line_ids = po_line_obj.search(
-            cr, uid, [('sale_order_id', 'in', ids)], context=context
-        )
-        po_ids = []
-        for line in po_line_obj.browse(cr, uid, line_ids, context=context):
-            po_ids.append(line.order_id.id)
-        result['domain'] = "[('id', 'in', %s)]" % po_ids
+        action_id = model_data_obj .xmlid_to_res_id(
+            'purchase.purchase_form_action')
+        result = action_obj.read(self._cr, self._uid, action_id,
+                                 context=self._context)
+
+        lines = po_line_obj.search([('sale_order_id', 'in', self.ids)])
+        result['domain'] = [('id', 'in', lines.ids)]
         return result

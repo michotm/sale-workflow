@@ -22,7 +22,7 @@
 
 {
     'name': 'Sale-Purchase Link',
-    'version': '1.0',
+    'version': '9.0.1.0.0',
     'category': 'Generic Modules',
     'description': """
         Implements a link between a Sale Order and its generated Manufacturing
@@ -30,12 +30,10 @@
     """,
     'author': 'Akretion',
     'website': 'http://akretion.com',
-    'depends': ['procurement'],
+    'depends': ['purchase', 'sale'],
     'data': [
         'purchase_view.xml',
         'sale_view.xml',
         ],
     'installable': True,
-    'auto_install': False,
-    'application': False,
 }
