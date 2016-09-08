@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+
+        <record id="view_white_label_tree" model="ir.ui.view">
+            <field name="name">white.label.tree</field>
+            <field name="model">white.label</field>
+            <field name="arch" type="xml">
+                <tree string="White Labels">
+                    <field name="active"/>
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="is_white_label_shop"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_white_label_form" model="ir.ui.view">
+            <field name="name">white_label.form</field>
+            <field name="model">white.label</field>
+            <field name="arch" type="xml">
+                <form string="White Label" name="white_label">
+                    <group colspan="4" col="2">
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="mrp_priority"/>
+                    </group>
+                    <group colspan="4">
+                        <field name="active"/>
+                        <field name="is_white_label_shop"/>
+                    </group>
+                    <group colspan="4" col="2">
+                        <field name="logo"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_white_label" model="ir.actions.act_window">
+                  <field name="name">White Labels</field>
+                  <field name="res_model">white.label</field>
+                  <field name="view_type">form</field>
+                  <field name="view_mode">tree,form</field>
+                  <field name="view_id" ref="view_white_label_tree"/>
+              </record>
+
+        <menuitem action="action_white_label" id="menu_white_label" parent="base.menu_sale_general_settings" />
+</openerp>

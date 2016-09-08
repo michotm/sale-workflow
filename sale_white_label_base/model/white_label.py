@@ -36,3 +36,4 @@ class WhiteLabel(models.Model):
         default='1'
     )
     is_white_label_shop = fields.Boolean('Is White Label')
+    active = fields.Boolean()

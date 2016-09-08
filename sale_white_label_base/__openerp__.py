@@ -30,6 +30,7 @@
     'depends': ['sale_stock', 'purchase', 'sale_mrp'],
     'data': [
         'view/sale_view.xml',
+        'view/white_label_view.xml',
         'security/ir.model.access.csv',
     ],
     'installable': True,
