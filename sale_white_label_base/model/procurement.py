@@ -18,23 +18,35 @@
 #                                                                       #
 #########################################################################
 
-from openerp import fields, models, api
+from openerp import models, api, exceptions
 
 
 class ProcurementOrder(models.Model):
     _inherit = 'procurement.order'
 
-    white_label_id = fields.Many2one('white.label', string='White Label')
+    @api.multi
+    def _get_white_label_from_group(self):
+        self.ensure_one()
+        white_label = self.env['white.label'].browse(False)
+        if self.group_id:
+            sales = self.env['sale.order'].search(
+                [('procurement_group_id', '=', self.group_id.id)])
+            if len(sales) > 1:
+                raise exceptions.ValidationError(
+                    _("More than 1 sale order found for this group"))
+        return white_label
 
     @api.model
     def _prepare_mo_vals(self, procurement):
         res = super(ProcurementOrder, self)._prepare_mo_vals(procurement)
-        res['white_label_id'] = procurement.white_label_id.id
-        res['priority'] = procurement.white_label_id.mrp_priority
+        white_label = procurement._get_white_label_from_group()
+        res['white_label_id'] = white_label.id
+        res['priority'] = white_label.mrp_priority
         return res
 
     @api.multi
     def _prepare_purchase_order(self, partner):
         res = super(ProcurementOrder, self)._prepare_purchase_order(partner)
-        res['white_label_id'] = self.white_label_id.id
+        white_label = self._get_white_label_from_group()
+        res['white_label_id'] = white_label.id
         return res

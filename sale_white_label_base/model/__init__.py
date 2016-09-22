@@ -24,3 +24,4 @@ from . import sale
 from . import procurement
 from . import purchase
 from . import mrp
+from . import account_invoice

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+
+<report
+    id="invoice_summary_xlsx"
+    model="account.invoice"
+    string="Invoice Summary"
+    report_type="xlsx"
+    name="account.summary.xlsx"
+    file="account.summary.xlsx"
+/>
+
+</data>
+</openerp>

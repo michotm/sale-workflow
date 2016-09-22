@@ -27,11 +27,13 @@
     'author': "Akretion,Odoo Community Association (OCA)",
     'website': 'http://www.akretion.com',
     'license': 'AGPL-3',
-    'depends': ['sale_stock', 'purchase', 'sale_mrp'],
+    'depends': ['sale_stock', 'purchase', 'sale_mrp', 'report_xlsx'],
     'data': [
         'view/sale_view.xml',
         'view/white_label_view.xml',
         'security/ir.model.access.csv',
+        'data.xml',
+        'report.xml',
     ],
     'installable': True,
 }

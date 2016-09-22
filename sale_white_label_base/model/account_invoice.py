@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #########################################################################
-#                                                                       #
-# Copyright (C) 2016  Akretion                                          #
+#  Copyright (C) 2016  Akretion                                         #
 #                                                                       #
 # This program is free software: you can redistribute it and/or modify  #
 # it under the terms of the GNU Affero General Public License as        #
@@ -19,5 +18,11 @@
 #                                                                       #
 #########################################################################
 
-from . import model
-from . import report
+from openerp import fields, models
+
+
+class AccountInvoice(models.Model):
+    _inherit = 'account.invoice'
+
+    white_label_id = fields.Many2one('white.label', string='White Label')
+    white_label_mail_sent = fields.Boolean()

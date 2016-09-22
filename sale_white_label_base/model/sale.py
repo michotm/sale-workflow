@@ -35,3 +35,9 @@ class SaleOrder(models.Model):
             group_id=group_id)
         res['white_label_id'] = self.white_label_id.id
         return res
+
+    @api.multi
+    def _prepare_invoice(self):
+        vals = super(SaleOrder, self)._prepare_invoice()
+        vals['white_label_id'] = self.white_label_id.id
+        return vals
