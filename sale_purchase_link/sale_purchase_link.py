@@ -15,8 +15,9 @@ class ProcurementOrder(models.Model):
     _inherit = 'procurement.order'
 
     @api.multi
-    def _prepare_purchase_order(self, partner):
-        res = super(ProcurementOrder, self)._prepare_purchase_order(partner)
+    def _prepare_purchase_order_line(self, po, supplier):
+        res = super(ProcurementOrder, self)._prepare_purchase_order_line(
+            po, supplier)
         if self.group_id:
             sales = self.env['sale.order'].search(
                 [('procurement_group_id', '=', self.group_id.id)])
@@ -48,5 +49,6 @@ class SaleOrder(models.Model):
                                  context=self._context)
 
         lines = po_line_obj.search([('sale_order_id', 'in', self.ids)])
-        result['domain'] = [('id', 'in', lines.ids)]
+        pos = lines.mapped('order_id')
+        result['domain'] = [('id', 'in', pos.ids)]
         return result
