@@ -34,6 +34,7 @@ class ProcurementOrder(models.Model):
             if len(sales) > 1:
                 raise exceptions.ValidationError(
                     _("More than 1 sale order found for this group"))
+            white_label = sales.white_label_id
         return white_label
 
     @api.model
