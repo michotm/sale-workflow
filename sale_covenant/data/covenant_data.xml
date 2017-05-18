@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<odoo noupdate="1">
+<openerp><data  noupdate="1">
 
     <record id="sale_covenant_data" model="sale.covenant">
         <field name="name">Main Market</field>
@@ -14,4 +14,4 @@ Here is miscellanous commitments for this market:
         <field name="image" type="base64" file="sale_covenant/static/description/icon.png"/>
     </record>
 
-</odoo>
+</data></openerp>

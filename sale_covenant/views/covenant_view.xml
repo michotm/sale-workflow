@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<odoo>
+<openerp><data>
 
     <record id="view_sale_covenant_tree" model="ir.ui.view">
         <field name="model">sale.covenant</field>
@@ -60,6 +60,6 @@
 
     <menuitem action="sale_covenant_action" name="Covenants"
               id="menu_sale_covenant_action"
-              parent="sale.menu_sales_config" sequence="10"/>
+              parent="base.menu_base_config" sequence="10"/>
 
-</odoo>
+</data></openerp>

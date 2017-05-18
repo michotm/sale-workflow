@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<odoo>
+<openerp><data>
 
     <record id="view_partner_property_form" model="ir.ui.view">
         <field name="model">res.partner</field>
@@ -12,4 +12,4 @@
         </field>
     </record>
 
-</odoo>
+</data></openerp>

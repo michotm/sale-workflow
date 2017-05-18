@@ -5,13 +5,12 @@
 {
     "name": "Sale Covenant",
     "summary": "Drive behavior on sale according to commercial conditions",
-    "version": "10.0.1.0.0",
+    "version": "8.0.1.0.0",
     "category": "Sale",
     "website": "https://www.akretion.com",
     "author": "Akretion, Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "depends": [
-        'base_onchange_rule',
         'sale',
     ],
     "data": [
