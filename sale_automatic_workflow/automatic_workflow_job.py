@@ -82,7 +82,8 @@ class AutomaticWorkflowJob(models.Model):
     @api.model
     def _validate_sale_orders(self):
         sale_obj = self.env['sale.order']
-        sales = sale_obj.search(self._get_domain_for_sale_validation())
+        sales = sale_obj.search(self._get_domain_for_sale_validation(),
+            order='date_order desc')
         _logger.debug('Sale Orders to validate: %s', sales)
         for sale in sales:
             with commit(self.env.cr):
@@ -94,7 +95,7 @@ class AutomaticWorkflowJob(models.Model):
         invoices = invoice_obj.search(
             [('state', 'in', ['draft']),
              ('workflow_process_id.validate_invoice', '=', True)],
-        )
+            order="date_invoice desc")
         _logger.debug('Invoices to validate: %s', invoices)
         for invoice in invoices:
             with commit(self.env.cr):
@@ -106,7 +107,7 @@ class AutomaticWorkflowJob(models.Model):
         pickings = picking_obj.search(
             [('state', 'in', ['draft', 'confirmed', 'assigned']),
              ('workflow_process_id.validate_picking', '=', True)],
-        )
+             order='create_date desc')
         _logger.debug('Pickings to validate: %s', pickings)
         if pickings:
             with commit(self.env.cr):
