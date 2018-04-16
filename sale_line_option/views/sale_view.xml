@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<openerp>
-<data>
-
+<odoo>
 
     <record id="view_sale_line_form" model="ir.ui.view">
         <field name="model">sale.order</field>
@@ -18,7 +16,7 @@
                 <div>
                     <field name="display_option" invisible="1"/>
                     <label for="option_ids" attrs="{'invisible': [('display_option', '=', False)]}"/>
-                    <field name="option_ids" context="{'line_product_id': product_id}"
+                    <field name="option_ids" context="{'line_product_id': product_id, 'option_sale_line_id': id}"
                            attrs="{'invisible': [('display_option', '=', False)]}">
                         <tree editable="bottom">
                             <field name="bom_line_id" invisible="1"/>
@@ -38,6 +36,4 @@
         </field>
     </record>
 
-
-</data>
-</openerp>
+</odoo>

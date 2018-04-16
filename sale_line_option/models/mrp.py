@@ -5,6 +5,26 @@
 from odoo import fields, api, models
 
 
+class MrpProduction(models.Model):
+    _inherit = 'mrp.production'
+
+    def _generate_raw_moves(self, exploded_lines):
+        options = {opt.product_id: opt.qty for opt in self.lot_id.option_ids}
+        moves = super(MrpProduction, self.with_context(
+            {'lot_options': options}))._generate_raw_moves(exploded_lines)
+        if options:
+            for move in moves:
+                move.write({'product_uom_qty': options[move.product_id]})
+        return moves
+
+    def _generate_raw_move(self, bom_line, line_data):
+        options = self.env.context.get('lot_options')
+        if options and bom_line.product_id not in options:
+            return self.env['stock.move']
+        return super(MrpProduction, self)._generate_raw_move(
+            bom_line, line_data)
+
+
 class MrpBomLine(models.Model):
     _inherit = "mrp.bom.line"
     _rec_name = 'name'
@@ -31,16 +51,21 @@ class MrpBomLine(models.Model):
         return res
 
     def search(self, domain, offset=0, limit=None, order=None, count=False):
+        print 'domaine', domain
+        # if domain != [('product_id', '=', False)]:
         new_domain = self._filter_bom_lines_for_sale_line_option(domain)
-        return super(MrpBomLine, self).search(
+        print new_domain
+        res = super(MrpBomLine, self).search(
             new_domain, offset=offset, limit=limit, order=order, count=count)
+        return res
 
     @api.model
     def _filter_bom_lines_for_sale_line_option(self, domain):
         product = self.env.context.get('filter_bom_with_product')
+        print 'CTXXXXXXXX', self._context
         if isinstance(product, int):
             product = self.env['product.product'].browse(product)
-        if product:
+        if product and self.env.context.get('option_sale_line_id'):
             new_domain = [
                 '|',
                 '&',
@@ -48,31 +73,15 @@ class MrpBomLine(models.Model):
                 ('bom_id.product_id', '=', False),
                 ('bom_id.product_id', '=', product.id)]
             domain += new_domain
+            # context key defined in sale.order.line view in this module
+            line_id = self.env.context.get('option_sale_line_id')
+            # if line_id:
+            #     sale_line = self.env['sale.order.line'].browse(line_id)
+            #     existing_products = [
+            #         x.product_id.id for x in sale_line.option_ids
+            #         if x.product_id != self.product_id]
+            #     if existing_products:
+            #         print 'EXXXXXXXX', existing_products
+            #         domain += [
+            #             ('product_id', 'not in', existing_products[:-1])]
         return domain
-
-
-class MrpBom(models.Model):
-    _inherit = "mrp.bom"
-
-    @api.model
-    def _skip_bom_line(self, line, product):
-        res = super(MrpBom, self)._skip_bom_line(line, product)
-        prod_id = self.env.context['production_id']
-        prod = self.env['mrp.production'].browse(prod_id)
-        bom_lines = [option.bom_line_id
-                     for option in prod.lot_id.option_ids]
-        if line in bom_lines:
-            return res
-        else:
-            return True
-
-    @api.model
-    def _prepare_conssumed_line(self, bom_line, quantity, product_uos_qty):
-        vals = super(MrpBom, self)._prepare_conssumed_line(
-            bom_line, quantity, product_uos_qty)
-        prod = self.env['mrp.production'].browse(
-            self.env.context['production_id'])
-        for option in prod.lot_id.option_ids:
-            if option.bom_line_id == bom_line:
-                vals['product_qty'] = vals['product_qty'] * option.qty
-        return vals
