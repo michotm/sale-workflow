@@ -19,5 +19,5 @@
         'security/ir.model.access.csv',
         'security/ir.rule.csv',
         ],
-    'installable': False,  # to much trouble in the repository
+    'installable': True,  # to much trouble in the repository 
 }
