@@ -6,9 +6,16 @@ from odoo.addons.sale.tests.test_sale_order import TestSaleOrder
 
 class TestSaleException(TestSaleOrder):
 
-    def test_sale_order_exception(self):
-        self.sale_exception_confirm = self.env['sale.exception.confirm']
+    def test_sale_order_exception_dom(self):
+        exception = self.env.ref('sale_exception.excep_no_zip_domain')
+        return self._sale_order_exception(exception)
+
+    def test_sale_order_exception_py(self):
         exception = self.env.ref('sale_exception.excep_no_zip')
+        return self._sale_order_exception(exception)
+
+    def _sale_order_exception(self, exception):
+        self.sale_exception_confirm = self.env['sale.exception.confirm']
         exception.active = True
         partner = self.env.ref('base.res_partner_1')
         partner.zip = False

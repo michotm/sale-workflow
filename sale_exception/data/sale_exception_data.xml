@@ -37,5 +37,16 @@
             <field name="active" eval="False"/>
         </record>
 
+        <record id ="excep_no_zip_domain" model="exception.rule">
+            <field name="name">No ZIP code on destination (domain)</field>
+            <field name="description">No ZIP code on destination (domain)</field>
+            <field name="sequence">50</field>
+            <field name="rule_group">sale</field>
+            <field name="model">sale.order</field>
+            <field name="exception_type">by_domain</field>
+            <field name="domain">[['partner_shipping_id.zip', '=', False]]</field>
+            <field name="active" eval="False"/>
+        </record>
+
     </data>
 </odoo>

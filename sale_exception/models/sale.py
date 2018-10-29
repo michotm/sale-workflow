@@ -17,6 +17,10 @@ class ExceptionRule(models.Model):
             ('sale.order.line', 'Sale order line'),
         ])
 
+    sale_ids = fields.Many2many(
+        'sale.order',
+        string='Sales')
+
 
 class SaleOrder(models.Model):
     _inherit = ['sale.order', 'base.exception']
