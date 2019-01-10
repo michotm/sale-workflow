@@ -97,6 +97,27 @@ class SaleOrderLine(models.Model):
         return res
 
 
+    @api.multi
+    def open_option_configurator(self):
+        view = self.env.ref('sale_line_option.view_order_line_form')
+        # import pdb; pdb.set_trace()
+        action = {
+            'name': _('Options'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'sale.order.line',
+            'view_id': view.id,
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'res_id': self.id,
+            'context': self.env.context,
+            # 'flags': {'form':
+            #     {'action_buttons': True, 'options': {'mode': 'edit'}}
+            # }
+        }
+        return action
+
+
 class SaleOrderLineOption(models.Model):
     _name = 'sale.order.line.option'
 

@@ -32,7 +32,36 @@
             </xpath>
             <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="before">
                 <field name="option_ids"/>
+                <field name="display_option" invisible="1"/>
+                <button name="open_option_configurator" string="Config Options" type="object" icon="fa-arrow-right text-success"/>
+                <!-- class="oe_edit_only" -->
             </xpath>
+        </field>
+    </record>
+
+
+    <record id="view_order_line_form" model="ir.ui.view">
+        <field name="model">sale.order.line</field>
+        <field name="arch" type="xml">
+            <form string="Sales Order" class="o_sale_order">
+                <field name="product_id"/>
+                <field name="product_uom_qty" string="Qty"/>
+                <field name="price_subtotal" sum="Total" widget="monetary"/>
+                <field name="display_option" invisible="1"/>
+                <label for="option_ids" attrs="{'invisible': [('display_option', '=', False)]}"/>
+                <field name="option_ids" context="{'line_product_id': product_id}"
+                        attrs="{'invisible': [('display_option', '=', False)]}">
+                    <tree editable="bottom">
+                        <field name="bom_line_id" invisible="1"/>
+                        <field name="product_ids" invisible="1"/>
+                        <field name="product_id"
+                                domain="[('id', 'in', product_ids[0][2]')]"/>
+                        <field name="qty"/>
+                        <field name="opt_max_qty" string="Max Qty"/>
+                        <field name="line_price"/>
+                    </tree>
+                </field>
+            </form>
         </field>
     </record>
 
