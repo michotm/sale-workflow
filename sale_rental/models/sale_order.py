@@ -57,6 +57,9 @@ class SaleOrderLine(models.Model):
         help="Indicate the number of items that will be rented.")
     sell_rental_id = fields.Many2one(
         'sale.rental', string='Rental to Sell')
+    rented_product_id = fields.Many2one(
+        comodel_name='product.product',
+        string="Rented product")
 
     @api.constrains(
         'rental_type', 'extension_rental_id', 'start_date', 'end_date',
@@ -80,7 +83,7 @@ class SaleOrderLine(models.Model):
                         line.rental_qty,
                         line.extension_rental_id.rental_qty))
             if line.rental_type in ('new_rental', 'rental_extension'):
-                if not line.product_id.rented_product_id:
+                if not line.product_id.rented_product_ids:
                     raise ValidationError(_(
                         "On the 'new rental' sale order line with product "
                         "'%s', we should have a rental service product !") % (
@@ -126,17 +129,21 @@ class SaleOrderLine(models.Model):
         res = super(SaleOrderLine, self)._prepare_order_line_procurement(
             group_id=group_id)
         if (
-                self.product_id.rented_product_id and
+                self.product_id.rented_product_ids and
                 self.rental_type == 'new_rental'):
             # 'product_qty' is re-written after
             # _prepare_order_line_procurement() in _action_procurement_create()
             # So I add a key 'rental_product_qty' which is used in the
             # inherit of create() of procurement.order
+            if not self.rented_product_id:
+                raise ValidationError(_(
+                    "You have to select a rented product for the rental "
+                    "product %s before validating the sale order") % self.product_id.name)
             res.update({
-                'product_id': self.product_id.rented_product_id.id,
+                'product_id': self.rented_product_id.id,
                 'product_qty': self.rental_qty,
                 'rental_product_qty': self.rental_qty,
-                'product_uom': self.product_id.rented_product_id.uom_id.id,
+                'product_uom': self.rented_product_id.uom_id.id,
                 'location_id':
                 self.order_id.warehouse_id.rental_out_location_id.id,
                 'route_ids':
@@ -148,46 +155,48 @@ class SaleOrderLine(models.Model):
                 self.order_id.warehouse_id.sell_rented_product_route_id.id])]
         return res
 
+    @api.onchange('rented_product_id')
+    def rented_product_id_change(self):
+        if self.rented_product_id and self.rental_type == 'new_rental' \
+                and self.rental_qty and self.order_id.warehouse_id:
+	    product_uom = self.rented_product_id.uom_id
+	    warehouse = self.order_id.warehouse_id
+	    rental_in_location = warehouse.rental_in_location_id
+	    rented_product_ctx = self.with_context(
+		location=rental_in_location.id).rented_product_id
+	    in_location_available_qty = rented_product_ctx.\
+		qty_available - rented_product_ctx.outgoing_qty
+	    compare_qty = float_compare(
+		in_location_available_qty, self.rental_qty,
+		precision_rounding=product_uom.rounding)
+	    if compare_qty == -1:
+		res['warning'] = {
+		    'title': _("Not enough stock !"),
+		    'message': _(
+			"You want to rent %.2f %s but you only "
+			"have %.2f %s currently available on the "
+			"stock location '%s' ! Make sure that you "
+			"get some units back in the mean time or "
+			"re-supply the stock location '%s'.") % (
+			self.rental_qty,
+			product_uom.name,
+			in_location_available_qty,
+			product_uom.name,
+			rental_in_location.name,
+			rental_in_location.name)
+		    }
+
+
     @api.onchange('product_id')
     def rental_product_id_change(self):
         res = {}
         if self.product_id:
-            if self.product_id.rented_product_id:
+            if self.product_id.rented_product_ids:
                 self.rental = True
                 self.can_sell_rental = False
                 self.sell_rental_id = False
                 if not self.rental_type:
                     self.rental_type = 'new_rental'
-                elif (
-                        self.rental_type == 'new_rental' and
-                        self.rental_qty and self.order_id.warehouse_id):
-                    product_uom = self.product_id.rented_product_id.uom_id
-                    warehouse = self.order_id.warehouse_id
-                    rental_in_location = warehouse.rental_in_location_id
-                    rented_product_ctx = self.with_context(
-                        location=rental_in_location.id).product_id.\
-                        rented_product_id
-                    in_location_available_qty = rented_product_ctx.\
-                        qty_available - rented_product_ctx.outgoing_qty
-                    compare_qty = float_compare(
-                        in_location_available_qty, self.rental_qty,
-                        precision_rounding=product_uom.rounding)
-                    if compare_qty == -1:
-                        res['warning'] = {
-                            'title': _("Not enough stock !"),
-                            'message': _(
-                                "You want to rent %.2f %s but you only "
-                                "have %.2f %s currently available on the "
-                                "stock location '%s' ! Make sure that you "
-                                "get some units back in the mean time or "
-                                "re-supply the stock location '%s'.") % (
-                                self.rental_qty,
-                                product_uom.name,
-                                in_location_available_qty,
-                                product_uom.name,
-                                rental_in_location.name,
-                                rental_in_location.name)
-                            }
             elif self.product_id.rental_service_ids:
                 self.can_sell_rental = True
                 self.rental = False
@@ -234,7 +243,7 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('rental_qty', 'number_of_days', 'product_id')
     def rental_qty_number_of_days_change(self):
-        if self.product_id.rented_product_id:
+        if self.product_id.rented_product_ids:
             uom_day = self.env.ref('product.product_uom_day')
             rental_time = uom_day._compute_quantity(
                 self.number_of_days, self.product_uom)

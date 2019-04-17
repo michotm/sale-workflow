@@ -17,8 +17,9 @@
         <notebook position="inside">
             <page name="rental" string="Rental">
                 <group name="rental-service"
-                    attrs="{'invisible': [('type', '!=', 'service')]}">
-                    <field name="rented_product_id"/>
+                    attrs="{'invisible': [('type', '!=', 'service')]}"
+                    string="Related Rented Services" col="1">
+                    <field name="rented_product_ids" nolabel="1"/>
                 </group>
                 <group name="rental-product"
                     attrs="{'invisible': [('type', '=', 'service')]}"

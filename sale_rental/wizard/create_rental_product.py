@@ -66,7 +66,7 @@ class CreateRentalProduct(models.TransientModel):
             'list_price': self.sale_price,
             'name': self.name,
             'default_code': self.default_code,
-            'rented_product_id': hw_product_id,
+            'rented_product_ids': [(6, 0, [hw_product_id])],
             'must_have_dates': True,
             'categ_id': self.categ_id.id,
             'invoice_policy': 'order',

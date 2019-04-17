@@ -19,7 +19,6 @@
     <field name="uom_id" ref="product.product_uom_day"/>
     <field name="uom_po_id" ref="product.product_uom_day"/>
     <field name="must_have_dates" eval="True"/>
-    <field name="rented_product_id" ref="product.product_product_6"/>
 </record>
 
 <record id="rent_product_product_8" model="product.product">
@@ -32,7 +31,6 @@
     <field name="uom_id" ref="product.product_uom_day"/>
     <field name="uom_po_id" ref="product.product_uom_day"/>
     <field name="must_have_dates" eval="True"/>
-    <field name="rented_product_id" ref="product.product_product_8"/>
 </record>
 
 <record id="rent_product_product_25" model="product.product">
@@ -45,7 +43,6 @@
     <field name="uom_id" ref="product.product_uom_day"/>
     <field name="uom_po_id" ref="product.product_uom_day"/>
     <field name="must_have_dates" eval="True"/>
-    <field name="rented_product_id" ref="product.product_product_25"/>
 </record>
 
 <!-- Create inventory on Rental In for these products -->
