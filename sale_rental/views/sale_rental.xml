@@ -87,6 +87,8 @@
     <field name="arch" type="xml">
         <search string="Search Rentals">
             <field name="partner_id"/>
+            <field name="rental_product_id"/>
+            <field name="rented_product_id"/>
             <filter name="ordered" string="Ordered"
                 domain="[('state', '=', 'ordered')]"/>
             <filter name="out" string="Out" domain="[('state', '=', 'out')]"/>
