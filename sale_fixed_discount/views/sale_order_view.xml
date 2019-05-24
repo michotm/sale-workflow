@@ -2,7 +2,8 @@
 <!-- Copyright 2017 Eficent Business and IT Consulting Services S.L.
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
-<odoo>
+<openerp>
+    <data>
 
     <record id="view_order_form" model="ir.ui.view">
         <field name="name">sale.order.form - sale_fixed_discount</field>
@@ -20,4 +21,5 @@
         </field>
     </record>
 
-</odoo>
+    </data>
+</openerp>

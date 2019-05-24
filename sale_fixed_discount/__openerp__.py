@@ -4,7 +4,7 @@
 {
     "name": "Sale Fixed Discount",
     "summary": "Allows to apply fixed amount discounts in sales orders.",
-    "version": "9.0.1.0.0",
+    "version": "8.0.1.0.0",
     "category": "Sales",
     "website": "https://odoo-community.org/",
     "author": "Eficent, Odoo Community Association (OCA)",
@@ -16,6 +16,6 @@
     ],
     "data": [
         "views/sale_order_view.xml",
-        "reports/report_sale_order.xml",
+#        "reports/report_sale_order.xml",
     ],
 }
