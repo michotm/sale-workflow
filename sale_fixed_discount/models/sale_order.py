@@ -11,7 +11,7 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     discount_fixed = fields.Float(
-        string="Discount (Fixed)",
+        string="Remise (Fixe)",
         digits=dp.get_precision('Product Price'),
         help="Fixed amount discount.")
 
