@@ -12,6 +12,7 @@
     'license': 'AGPL-3',
     'category': 'Sale',
     'depends': [
+        'sale',
         'onchange_helper',
     ],
     'data': [

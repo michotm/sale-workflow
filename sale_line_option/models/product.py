@@ -3,17 +3,26 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import fields, api, models
+from odoo.addons import decimal_precision as dp
+
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+    
+    product_option_line_ids = fields.One2many('product.option.line',
+            'parent_product_tmpl_id', 'Option Lines', copy=True)
 
 
 class Product(models.Model):
     _inherit = 'product.product'
     
-    product_option_line_ids = fields.One2many('product.option.line', 'parent_product_id', 'Option Lines', copy=True)
+    product_option_line_ids = fields.One2many('product.option.line',
+            'parent_product_id', 'Option Lines', copy=True)
 
 class ProductOptionLine(models.Model):
     _name = 'product.option.line'
-    _order = "sequence, id"
-    _rec_name = "name, product_id"
+    _order = "sequence, name, id"
+    _rec_name = "product_id"
     _description = 'Product Option Line'
 
     def _get_default_product_uom_id(self):
@@ -22,6 +31,9 @@ class ProductOptionLine(models.Model):
     parent_product_id = fields.Many2one(
         'product.product', 'Parent Product',
         index=True, ondelete='cascade', required=True)
+    parent_product_tmpl_id = fields.Many2one('product.template',
+            'Parent Product Template Option',
+            related='parent_product_id.product_tmpl_id', readonly=False)
     product_id = fields.Many2one(
         'product.product', 'Component Option', required=True)
     product_tmpl_id = fields.Many2one('product.template', 'Product Template Option',
@@ -31,8 +43,7 @@ class ProductOptionLine(models.Model):
         digits=dp.get_precision('Product Unit of Measure'), required=True)
     product_uom_id = fields.Many2one(
         'uom.uom', 'Product Unit of Measure',
-        default=_get_default_product_uom_id,
-        oldname='product_uom', required=True,
+        default=_get_default_product_uom_id, required=True,
         help="Unit of Measure (Unit of Measure) is the unit of measurement"
         " for the inventory control")
     sequence = fields.Integer(
@@ -57,13 +68,13 @@ class ProductOptionLine(models.Model):
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         new_domain = self._prodopt_parent_lines_for_sale_line_option(args)
-        res = super(MrpBomLine, self).name_search(
+        res = super(ProductOptionLine, self).name_search(
             name=name, args=new_domain, operator=operator, limit=limit)
         return res
 
     def search(self, domain, offset=0, limit=None, order=None, count=False):
         new_domain = self._prodopt_parent_lines_for_sale_line_option(domain)
-        return super(MrpBomLine, self).search(
+        return super(ProductOptionLine, self).search(
             new_domain, offset=offset, limit=limit, order=order, count=count)
 
     @api.model

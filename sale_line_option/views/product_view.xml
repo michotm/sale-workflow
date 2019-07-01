@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-     <record id="view_bom_line_form" model="ir.ui.view">
-        <field name="model">mrp.bom</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+     <record id="view_product_template_option_line_form" model="ir.ui.view">
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="option" string="Options">
+                    <group>
+                        <field name="product_option_line_ids" nolabel="1">
+                            <tree>
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="product_id" context="{'default_type': 'product'}"/>
+                                <field name="product_qty"/>
+                                <field name="parent_product_id" invisible="1" />
+                                <field name="product_uom_id" options="{'no_open':True,'no_create':True}" groups="uom.group_uom"/>
+                                <field name="opt_min_qty"/>
+                                <field name="opt_default_qty" />
+                                <field name="opt_max_qty"/> 
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+        </record>
+        <record id="view_product_option_line_form" model="ir.ui.view">
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page name="option" string="Options">
