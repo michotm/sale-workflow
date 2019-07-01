@@ -19,7 +19,7 @@
                     <field name="option_ids" context="{'line_product_id': product_id}"
                            attrs="{'invisible': [('display_option', '=', False)]}">
                         <tree editable="bottom">
-                            <field name="bom_line_id" invisible="1"/>
+                            <field name="product_option_line_id" invisible="1"/>
                             <field name="product_ids" invisible="1"/>
                             <field name="product_id"
                                    domain="[('id', 'in', product_ids[0][2]')]"/>

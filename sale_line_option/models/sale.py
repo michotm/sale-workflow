@@ -16,7 +16,7 @@ class SaleOrderLine(models.Model):
     option_ids = fields.One2many(
         comodel_name='sale.order.line.option',
         inverse_name='sale_line_id', string='Options', copy=True,
-        help="Options can be defined with product bom")
+        help="Options can be defined with product options")
     display_option = fields.Boolean(
         help="Technical: allow conditional options field display")
 
@@ -72,16 +72,16 @@ class SaleOrderLine(models.Model):
     def _set_option_lines(self, product):
         lines = []
         display_option = False
-        bline = None
-        bom_lines = self.env['mrp.bom.line'].with_context(
-            filter_bom_with_product=product).search([])
-        for bline in bom_lines:
-            if bline.opt_default_qty:  # TODO: changer pour bline.is_option?
-                vals = {'bom_line_id': bline.id,
-                        'product_id': bline.product_id.id,
-                        'qty': bline.opt_default_qty}
+        pdtoptline = None
+        prod_opt_lines = self.env['product.option.line'].with_context(
+            prodopt_parent_with_product=product).search([])
+        for pdtoptline in prod_opt_lines:
+            if pdtoptline.opt_default_qty:  # TODO: changer pour pdtoptline.is_option?
+                vals = {'product_option_line_id': pdtoptline.id,
+                        'product_id': pdtoptline.product_id.id,
+                        'qty': pdtoptline.opt_default_qty}
                 lines.append((0, 0, vals))  # create
-        if bline:
+        if pdtoptline:
             display_option = True
         return (display_option, lines)
 
@@ -92,14 +92,6 @@ class SaleOrderLine(models.Model):
             final_options_price += option.line_price
             self.price_unit = final_options_price + self.base_price_unit
 
-    @api.model
-    def _prepare_vals_lot_number(self, index_lot):
-        res = super(SaleOrderLine, self)._prepare_vals_lot_number(index_lot)
-        res['option_ids'] = [
-            (6, 0, [line.id for line in self.option_ids])
-        ]
-        return res
-
 
 class SaleOrderLineOption(models.Model):
     _name = 'sale.order.line.option'
@@ -108,19 +100,19 @@ class SaleOrderLineOption(models.Model):
         comodel_name='sale.order.line',
         required=True,
         ondelete='cascade')
-    bom_line_id = fields.Many2one(
-        comodel_name='mrp.bom.line', string='Bom Line', ondelete="set null")
+    product_option_line_id = fields.Many2one(
+        comodel_name='product.option.line', string='Product Option Line', ondelete="set null")
     product_ids = fields.Many2many(
         comodel_name='product.product', compute='_compute_opt_products')
     product_id = fields.Many2one(
         comodel_name='product.product', string='Product', required=True)
     qty = fields.Integer(default=lambda x: x.default_qty)
     min_qty = fields.Integer(
-        related='bom_line_id.opt_min_qty', readonly=True)
+        related='product_option_line_id.opt_min_qty', readonly=True)
     default_qty = fields.Integer(
-        related='bom_line_id.opt_default_qty', readonly=True)
+        related='product_option_line_id.opt_default_qty', readonly=True)
     max_qty = fields.Integer(
-        related='bom_line_id.opt_max_qty', readonly=True)
+        related='product_option_line_id.opt_max_qty', readonly=True)
     invalid_qty = fields.Boolean(
         compute='_compute_invalid_qty', store=True,
         help="Can be used to prevent confirmed sale order")
@@ -137,9 +129,9 @@ class SaleOrderLineOption(models.Model):
         res = super(SaleOrderLineOption, self).default_get(fields)
         line_product_id = self.env.context.get('line_product_id')
         if line_product_id:
-            bom_lines = self.env['mrp.bom.line'].with_context(
-                filter_bom_with_product=line_product_id).search([])
-            res['product_ids'] = [x.product_id.id for x in bom_lines]
+            prod_opt_lines = self.env['product.option.line'].with_context(
+                prodopt_parent_with_product=line_product_id).search([])
+            res['product_ids'] = [x.product_id.id for x in prod_opt_lines]
         return res
 
     @api.model
@@ -150,23 +142,24 @@ class SaleOrderLineOption(models.Model):
 
     @api.onchange('product_id')
     def _onchange_product(self):
-        """ we need to store bom_line_id to compute option price """
-        ctx = {'filter_bom_with_product': self.env.context.get(
-            'line_product_id')}
-        bom_line = self.env['mrp.bom.line'].with_context(ctx).search([
+        """ we need to store product_option_line_id to compute option price """
+        ctx = {'prodopt_parent_with_product': self.env.context.get(
+            line_product_id)}
+        prod_opt_line = self.env['product.option.line'].with_context(ctx).search([
             ('product_id', '=', self.product_id.id)], limit=1)
-        self.bom_line_id = bom_line and bom_line.id
+        self.product_option_line_id = prod_opt_line and prod_opt_line.id
 
     def _compute_opt_products(self):
         """ required to set available options """
         prd_ids = [x.product_id.id
-                   for x in self[0].bom_line_id.bom_id.bom_line_ids]
+                   for x in self[0].product_option_line_id.\
+                           parent_product_id.product_option_line_ids]
         for rec in self:
             rec.product_ids = prd_ids
 
-    def _get_bom_line_price(self):
+    def _get_prod_opt_line_price(self):
         self.ensure_one()
-        ctx = {'uom': self.bom_line_id.product_uom_id.id}
+        ctx = {'uom': self.product_option_line_id.product_uom_id.id}
         if self.sale_line_id.order_id.date_order:
             ctx['date'] = self.sale_line_id.order_id.date_order
         pricelist = self.sale_line_id.pricelist_id.with_context(ctx)
@@ -180,17 +173,17 @@ class SaleOrderLineOption(models.Model):
     def _compute_price(self):
         for record in self:
             if record.product_id and record.sale_line_id.pricelist_id:
-                record.line_price = record._get_bom_line_price()
+                record.line_price = record._get_prod_opt_line_price()
             else:
                 record.line_price = 0
 
     def _is_quantity_valid(self, record):
         """Ensure product_qty <= qty <= max_qty."""
-        if not record.bom_line_id:
+        if not record.product_option_line_id:
             return True
-        if record.qty < record.bom_line_id.opt_min_qty:
+        if record.qty < record.product_option_line_id.opt_min_qty:
             return False
-        if record.qty > record.bom_line_id.opt_max_qty:
+        if record.qty > record.product_option_line_id.opt_max_qty:
             return False
         return True
 
