@@ -159,32 +159,32 @@ class SaleOrderLine(models.Model):
     def rented_product_id_change(self):
         if self.rented_product_id and self.rental_type == 'new_rental' \
                 and self.rental_qty and self.order_id.warehouse_id:
-	    product_uom = self.rented_product_id.uom_id
-	    warehouse = self.order_id.warehouse_id
-	    rental_in_location = warehouse.rental_in_location_id
-	    rented_product_ctx = self.with_context(
-		location=rental_in_location.id).rented_product_id
-	    in_location_available_qty = rented_product_ctx.\
-		qty_available - rented_product_ctx.outgoing_qty
-	    compare_qty = float_compare(
-		in_location_available_qty, self.rental_qty,
-		precision_rounding=product_uom.rounding)
-	    if compare_qty == -1:
-		res['warning'] = {
-		    'title': _("Not enough stock !"),
-		    'message': _(
-			"You want to rent %.2f %s but you only "
-			"have %.2f %s currently available on the "
-			"stock location '%s' ! Make sure that you "
-			"get some units back in the mean time or "
-			"re-supply the stock location '%s'.") % (
-			self.rental_qty,
-			product_uom.name,
-			in_location_available_qty,
-			product_uom.name,
-			rental_in_location.name,
-			rental_in_location.name)
-		    }
+            product_uom = self.rented_product_id.uom_id
+            warehouse = self.order_id.warehouse_id
+            rental_in_location = warehouse.rental_in_location_id
+            rented_product_ctx = self.with_context(
+                location=rental_in_location.id).rented_product_id
+            in_location_available_qty = rented_product_ctx.\
+                qty_available - rented_product_ctx.outgoing_qty
+            compare_qty = float_compare(
+                in_location_available_qty, self.rental_qty,
+                precision_rounding=product_uom.rounding)
+            if compare_qty == -1:
+                res['warning'] = {
+                    'title': _("Not enough stock !"),
+                    'message': _(
+                        "You want to rent %.2f %s but you only "
+                        "have %.2f %s currently available on the "
+                        "stock location '%s' ! Make sure that you "
+                        "get some units back in the mean time or "
+                        "re-supply the stock location '%s'.") % (
+                        self.rental_qty,
+                        product_uom.name,
+                        in_location_available_qty,
+                        product_uom.name,
+                        rental_in_location.name,
+                        rental_in_location.name)
+                    }
 
 
     @api.onchange('product_id')
