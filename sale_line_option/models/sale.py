@@ -158,11 +158,11 @@ class SaleOrderLineOption(models.Model):
         pricelist = self.sale_line_id.pricelist_id.with_context(ctx)
         price = pricelist.price_get(
             self.product_id.id,
-            self.qty * self.sale_line_id.product_qty,
+            self.qty * self.sale_line_id.product_uom_qty,
             self.sale_line_id.order_id.partner_id.id)
         return price[pricelist.id] * self.qty
 
-    @api.depends('qty', 'product_id', 'sale_line_id.product_qty')
+    @api.depends('qty', 'product_id', 'sale_line_id.product_uom_qty')
     def _compute_price(self):
         for record in self:
             if record.product_id and record.sale_line_id.pricelist_id:
@@ -171,7 +171,7 @@ class SaleOrderLineOption(models.Model):
                 record.line_price = 0
 
     def _is_quantity_valid(self, record):
-        """Ensure product_qty <= qty <= max_qty."""
+        """Ensure product_uom_qty <= qty <= max_qty."""
         if not record.bom_line_id:
             return True
         if record.qty < record.bom_line_id.opt_min_qty:

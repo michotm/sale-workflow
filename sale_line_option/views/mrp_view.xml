@@ -10,7 +10,7 @@
             </field>
             <field name="bom_line_ids" position="after">
                 <field name="optionnal_bom_line_ids" attrs="{'invisible': [('with_option', '=', False)]}">
-                    <tree>
+                    <tree string="Options" editable="bottom">
                         <field name="sequence" widget="handle"/>
                         <field name="product_id" context="{'default_type': 'product'}"/>
                         <field name="has_attachments" invisible="1"/>

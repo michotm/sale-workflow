@@ -5,13 +5,14 @@
 
 {
     'name': 'Sale Line Option',
-    'version': '10.0.0.1.1',
+    'version': '12.0.0.1.1',
     'author': 'Akretion, Odoo Community Association (OCA)',
     'website': 'www.akretion.com',
     'license': 'AGPL-3',
     'category': 'Sale',
     'depends': [
-        'sale_order_lot_mrp',
+        'sale_stock',
+        'mrp',
     ],
     'data': [
         'views/sale_view.xml',
