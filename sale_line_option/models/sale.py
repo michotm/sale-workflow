@@ -172,12 +172,14 @@ class SaleOrderLineOption(models.Model):
 
     def _is_quantity_valid(self, record):
         """Ensure product_uom_qty <= qty <= max_qty."""
-        if not record.bom_line_id:
-            return True
-        if record.qty < record.bom_line_id.opt_min_qty:
-            return False
-        if record.qty > record.bom_line_id.opt_max_qty:
-            return False
+        # La notion de min max doit être revue car ne correspond 
+        # pas au produits sur mesure (atoutcofrage)
+        # if not record.bom_line_id:
+            # return True
+        # if record.qty < record.bom_line_id.opt_min_qty:
+            # return False
+        # if record.qty > record.bom_line_id.opt_max_qty:
+            # return False
         return True
 
     @api.depends('qty')
