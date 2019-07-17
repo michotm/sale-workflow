@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import fields, models
-
+from odoo.addons import decimal_precision as dp
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
@@ -40,12 +40,12 @@ class MrpBom(models.Model):
 class MrpBomLine(models.Model):
     _inherit = "mrp.bom.line"
 
-    opt_min_qty = fields.Integer(
+    opt_min_qty = fields.Float(
         string="Min Qty", default=0)
-    opt_default_qty = fields.Integer(
+    opt_default_qty = fields.Float(
         string="Default Qty", oldname='default_qty', default=0,
         help="This is the default quantity set to the sale line option ")
-    opt_max_qty = fields.Integer(
+    opt_max_qty = fields.Float(
         string="Max Qty", oldname='max_qty', default=1,
         help="High limit authorised in the sale line option")
 

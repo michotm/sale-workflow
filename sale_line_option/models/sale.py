@@ -5,30 +5,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import _, fields, api, models
-
-
-class SaleOrder(models.Model):
-    _inherit = 'sale.order'
-
-    @api.multi
-    def onchange(self, values, field_name, field_onchange):
-        res = super(SaleOrder, self).onchange(
-            values, field_name, field_onchange)
-        idx = 0
-        # hack for issue : https://github.com/odoo/odoo/issues/17618
-        # Restore options that have been dropped
-        if 'order_line' in res['value']:
-            for data in res['value']['order_line']:
-                if data == (5,):
-                    continue
-                act, _, line = data
-                if act in [0, 1] and 'option_ids' in line:
-                    original_line = values['order_line'][idx][2]
-                    if original_line:
-                        line['option_ids'] = original_line['option_ids']
-                idx += 1
-        return res
-
+from odoo.addons import decimal_precision as dp
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
@@ -117,12 +94,12 @@ class SaleOrderLineOption(models.Model):
         store=True)
     product_id = fields.Many2one(
         comodel_name='product.product', string='Product', required=True)
-    qty = fields.Integer(default=lambda x: x.default_qty)
-    min_qty = fields.Integer(
+    qty = fields.Float(default=lambda x: x.default_qty)
+    min_qty = fields.Float(
         related='bom_line_id.opt_min_qty', readonly=True)
-    default_qty = fields.Integer(
+    default_qty = fields.Float(
         related='bom_line_id.opt_default_qty', readonly=True)
-    max_qty = fields.Integer(
+    max_qty = fields.Float(
         related='bom_line_id.opt_max_qty', readonly=True)
     invalid_qty = fields.Boolean(
         compute='_compute_invalid_qty', store=True,
