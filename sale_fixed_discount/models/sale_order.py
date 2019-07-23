@@ -45,6 +45,6 @@ class SaleOrderLine(models.Model):
         res = super(SaleOrderLine, self)._prepare_order_line_invoice_line(
             line, account_id=account_id)
         res.update({
-            'discount_fixed': self.discount_fixed,
+            'discount_fixed': line.discount_fixed,
         })
         return res
