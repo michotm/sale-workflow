@@ -31,9 +31,10 @@ class CreateRentalProduct(models.TransientModel):
         else:
             return ''
 
-    sale_price_per_day = fields.Float(
-        string='Rental Price per Day', required=True,
-        digits=dp.get_precision('Product Price'), default=1.0)
+    sale_price = fields.Float(
+        string='Rental Price', required=True,
+        digits=dp.get_precision('Product Price'), default=1.0,
+        help="Rental price per unit of mesure")
     name = fields.Char(
         string='Product Name', size=64, required=True,
         default=_default_name)
@@ -42,6 +43,10 @@ class CreateRentalProduct(models.TransientModel):
     categ_id = fields.Many2one(
         'product.category', string='Product Category', required=True)
     copy_image = fields.Boolean(string='Copy Product Image')
+    uom_id = fields.Many2one(
+        comodel_name='product.uom', string='Unit of Measure', required=True,
+        default=lambda self: self.env.ref('product.product_uom_day').id,
+        domain=lambda self: [('category_id', '=', self.env.ref('product.uom_categ_wtime').id)])
 
     @api.model
     def _prepare_rental_product(self):
@@ -51,14 +56,14 @@ class CreateRentalProduct(models.TransientModel):
         assert hw_product_id, 'Active ID is not set'
         pp_obj = self.env['product.product']
         hw_product = pp_obj.browse(hw_product_id)
-        day_uom_id = self.env.ref('product.product_uom_day').id
+        uom_id = self.uom_id.id
         vals = {
             'type': 'service',
             'sale_ok': True,
             'purchase_ok': False,
-            'uom_id': day_uom_id,
-            'uom_po_id': day_uom_id,
-            'list_price': self.sale_price_per_day,
+            'uom_id': uom_id,
+            'uom_po_id': uom_id,
+            'list_price': self.sale_price,
             'name': self.name,
             'default_code': self.default_code,
             'rented_product_id': hw_product_id,

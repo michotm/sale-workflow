@@ -85,8 +85,11 @@ class SaleOrderLine(models.Model):
                         "On the 'new rental' sale order line with product "
                         "'%s', we should have a rental service product !") % (
                         line.product_id.name))
+                uom_day = self.env.ref('product.product_uom_day')
+                rental_time = uom_day._compute_quantity(
+                    self.number_of_days, self.product_uom)
                 if line.product_uom_qty != \
-                        line.rental_qty * line.number_of_days:
+                        self.rental_qty * rental_time:
                     raise ValidationError(_(
                         "On the sale order line with product '%s' "
                         "the Product Quantity (%s) should be the "
@@ -232,7 +235,10 @@ class SaleOrderLine(models.Model):
     @api.onchange('rental_qty', 'number_of_days', 'product_id')
     def rental_qty_number_of_days_change(self):
         if self.product_id.rented_product_id:
-            qty = self.rental_qty * self.number_of_days
+            uom_day = self.env.ref('product.product_uom_day')
+            rental_time = uom_day._compute_quantity(
+                self.number_of_days, self.product_uom)
+            qty = self.rental_qty * rental_time
             self.product_uom_qty = qty
 
     @api.onchange('rental_type')

@@ -34,11 +34,11 @@ class ProductProduct(models.Model):
                     % product.name)
             # In the future, we would like to support all time UoMs
             # but it is more complex and requires additionnal developments
-            day_uom = product.env.ref('product.product_uom_day')
-            if product.rented_product_id and product.uom_id != day_uom:
+            time_uom_categ = product.env.ref('product.uom_categ_wtime')
+            if product.rented_product_id and product.uom_id.category_id != time_uom_categ:
                 raise ValidationError(_(
-                    "The unit of measure of the rental product '%s' must "
-                    "be 'Day'.") % product.name)
+                    "The category of the unit of measure of the rental product "
+                    "'%s' must be 'Working time'.") % product.name)
 
     @api.multi
     def _need_procurement(self):
