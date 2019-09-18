@@ -157,6 +157,7 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('rented_product_id')
     def rented_product_id_change(self):
+        res = {}
         if self.rented_product_id and self.rental_type == 'new_rental' \
                 and self.rental_qty and self.order_id.warehouse_id:
             product_uom = self.rented_product_id.uom_id
@@ -185,6 +186,7 @@ class SaleOrderLine(models.Model):
                         rental_in_location.name,
                         rental_in_location.name)
                     }
+        return res
 
 
     @api.onchange('product_id')
