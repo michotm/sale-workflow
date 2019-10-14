@@ -25,6 +25,7 @@
                             <field name="qty" string="Desired qty" />
                             <field name="min_qty"/>
                             <field name="max_qty"/>
+                            <field name="product_uom_id" options="{'no_open':True,'no_create':True}" groups="uom.group_uom"/>
                             <field name="line_price"/>
                             <field name="invalid_qty" invisible="True"/>
                         </tree>
