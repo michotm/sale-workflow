@@ -105,6 +105,9 @@ class SaleOrderLineOption(models.Model):
         compute='_compute_invalid_qty', store=True,
         help="Can be used to prevent confirmed sale order")
     line_price = fields.Float(compute='_compute_price', store=True)
+    product_uom_id = fields.Many2one('uom.uom',
+                                     related='bom_line_id.product_uom_id',
+                                     readonly=True, store=True)
 
     _sql_constraints = [
         ('option_unique_per_line',
