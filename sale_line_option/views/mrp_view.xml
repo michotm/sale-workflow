@@ -20,7 +20,7 @@
                         <field name="opt_min_qty"/>
                         <field name="opt_default_qty"/>
                         <field name="opt_max_qty"/>
-                        <field name="product_uom_id" options="{'no_open':True,'no_create':True}" groups="product.group_uom"/>
+                        <field name="product_uom_id" options="{'no_open':True,'no_create':True}" groups="uom.group_uom"/>
                         <field name="operation_id" groups="mrp.group_mrp_routings" domain="[('routing_id', '=', parent.routing_id)]" options="{'no_quick_create':True,'no_create_edit':True}"/>
                     </tree>
                 </field>
