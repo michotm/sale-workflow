@@ -36,7 +36,6 @@ class PriceType(orm.Model):
             _price_inc_field_get,
             "Product Field Tax Inc",
             size=32,
-            required=True,
             help="Associated field in the product form."),
     }
 
