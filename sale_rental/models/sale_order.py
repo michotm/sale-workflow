@@ -163,8 +163,8 @@ class SaleOrderLine(models.Model):
             product_uom = self.rented_product_id.uom_id
             warehouse = self.order_id.warehouse_id
             rental_in_location = warehouse.rental_in_location_id
-            rented_product_ctx = self.with_context(
-                location=rental_in_location.id).rented_product_id
+            rented_product_ctx = self.env['product.product'].with_context(
+                location=rental_in_location.id).browse(self.rented_product_id.id)
             in_location_available_qty = rented_product_ctx.\
                 qty_available - rented_product_ctx.outgoing_qty
             compare_qty = float_compare(
