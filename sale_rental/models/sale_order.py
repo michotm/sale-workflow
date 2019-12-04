@@ -63,7 +63,7 @@ class SaleOrderLine(models.Model):
 
     @api.constrains(
         'rental_type', 'extension_rental_id', 'start_date', 'end_date',
-        'rental_qty', 'product_uom_qty', 'product_id')
+        'rental_qty', 'product_uom_qty', 'product_id', 'product_rented_id')
     def _check_sale_line_rental(self):
         for line in self:
             if line.rental_type == 'rental_extension':
@@ -82,14 +82,23 @@ class SaleOrderLine(models.Model):
                         line.product_id.name,
                         line.rental_qty,
                         line.extension_rental_id.rental_qty))
+                if line.rented_product_id != line.extension_rental_id.rented_product_id:
+                    raise ValidationError(_(
+                        "On the sale order line with rental service %s, "
+                        "you have selected the rented product %s the is different"
+                        "from the rented product of original rental %s.")
+                        % (
+                        line.product_id.name,
+                        line.rented_product_id.name,
+                        line.extension_rental_id.rented_product_id.name))
             if line.rental_type in ('new_rental', 'rental_extension'):
                 if not line.product_id.rented_product_ids:
                     raise ValidationError(_(
                         "On the 'new rental' sale order line with product "
                         "'%s', we should have a rental service product !") % (
                         line.product_id.name))
-                uom_day = self.env.ref('product.product_uom_day')
-                rental_time = uom_day._compute_quantity(
+
+                rental_time = self._get_rental_time(
                     self.number_of_days, self.product_uom)
                 if line.product_uom_qty != \
                         self.rental_qty * rental_time:
@@ -221,7 +230,7 @@ class SaleOrderLine(models.Model):
             self.sell_rental_id = False
         return res
 
-    @api.onchange('extension_rental_id')
+    @api.onchange('extension_rental_id', 'rented_product_id')
     def extension_rental_id_change(self):
         if (
                 self.product_id and
@@ -236,7 +245,9 @@ class SaleOrderLine(models.Model):
             initial_end_date = fields.Date.from_string(
                 self.extension_rental_id.end_date)
             self.start_date = initial_end_date + relativedelta(days=1)
+            self.end_date = initial_end_date + relativedelta(days=1)
             self.rental_qty = self.extension_rental_id.rental_qty
+            self.rented_product_id = self.extension_rental_id.rented_product_id.id
 
     @api.onchange('sell_rental_id')
     def sell_rental_id_change(self):
@@ -246,8 +257,7 @@ class SaleOrderLine(models.Model):
     @api.onchange('rental_qty', 'number_of_days', 'product_id')
     def rental_qty_number_of_days_change(self):
         if self.product_id.rented_product_ids:
-            uom_day = self.env.ref('product.product_uom_day')
-            rental_time = uom_day._compute_quantity(
+            rental_time = self._get_rental_time(
                 self.number_of_days, self.product_uom)
             qty = self.rental_qty * rental_time
             self.product_uom_qty = qty
@@ -256,3 +266,10 @@ class SaleOrderLine(models.Model):
     def rental_type_change(self):
         if self.rental_type == 'new_rental':
             self.extension_rental_id = False
+
+    @api.model
+    def _get_rental_time(self, number_of_days, product_uom):
+        uom_day = self.env.ref('product.product_uom_day')
+        rental_time = uom_day._compute_quantity(
+            self.number_of_days, self.product_uom)
+        return rental_time
