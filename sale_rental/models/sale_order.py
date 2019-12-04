@@ -271,5 +271,5 @@ class SaleOrderLine(models.Model):
     def _get_rental_time(self, number_of_days, product_uom):
         uom_day = self.env.ref('product.product_uom_day')
         rental_time = uom_day._compute_quantity(
-            self.number_of_days, self.product_uom)
+            number_of_days, product_uom)
         return rental_time
