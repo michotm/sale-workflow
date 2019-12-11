@@ -10,12 +10,6 @@ def migrate(env, version):
     # Update exception_rule for sale.order and sale.order.line:
     openupgrade.logged_query(
         env.cr, """
-        UPDATE exception_rule
-        SET rule_group = 'sale'
-        WHERE model ='sale.order' or model = 'sale.order.line'"""
-    )
-    openupgrade.logged_query(
-        env.cr, """
         UPDATE ir_model_data
         SET model = 'exception.rule'
         WHERE model ='sale.exception'"""
