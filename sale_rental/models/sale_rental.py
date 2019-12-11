@@ -23,13 +23,26 @@ class SaleRental(models.Model):
         'extension_order_line_ids.state', 'start_order_line_id.end_date')
     def _compute_display_name_field(self):
         for rental in self:
-            rental.display_name = u'[%s] %s - %s > %s (%s)' % (
+            rental.display_name = u'[%s][%s][%s] %s - %s > %s (%s)' % (
+                rental.start_order_id.name,
                 rental.partner_id.name,
+                rental.rented_product_id.default_code,
                 rental.rented_product_id.name,
                 rental.start_date,
                 rental.end_date,
                 rental._fields['state'].convert_to_export(rental.state, rental)
             )
+
+    def _search_display_name(self, operator, value):
+        return [
+            '|',
+            '|',
+            '|',
+            ('start_order_id.name', operator, value),
+            ('partner_id.name', operator, value),
+            ('rented_product_id.name', operator, value),
+            ('rented_product_id.default_code', operator, value)
+        ]
 
     @api.multi
     @api.depends(
@@ -103,7 +116,7 @@ class SaleRental(models.Model):
 
     display_name = fields.Char(
         compute='_compute_display_name_field', string='Display Name',
-        readonly=True)
+        readonly=True, search='_search_display_name')
     start_order_line_id = fields.Many2one(
         'sale.order.line', string='Rental Sale Order Line', readonly=True)
     start_date = fields.Date(
@@ -114,15 +127,15 @@ class SaleRental(models.Model):
     rented_product_id = fields.Many2one(
         'product.product',
         related='start_order_line_id.rented_product_id',
-        string="Rented Product", readonly=True)
+        string="Rented Product", readonly=True, store=True)
     rental_qty = fields.Float(
         related='start_order_line_id.rental_qty', readonly=True)
     start_order_id = fields.Many2one(
         'sale.order', related='start_order_line_id.order_id',
-        string='Rental Sale Order', readonly=True)
+        string='Rental Sale Order', readonly=True, store=True)
     company_id = fields.Many2one(
         'res.company', related='start_order_line_id.order_id.company_id',
-        string='Company', readonly=True)
+        string='Company', readonly=True, store=True)
     partner_id = fields.Many2one(
         'res.partner', related='start_order_line_id.order_id.partner_id',
         string='Customer', readonly=True, store=True)
@@ -137,16 +150,16 @@ class SaleRental(models.Model):
         string='Return Stock Move', readonly=True, store=True)
     out_state = fields.Selection(
         related='out_move_id.state',
-        string='State of the Outgoing Stock Move', readonly=True)
+        string='State of the Outgoing Stock Move', readonly=True, store=True)
     in_state = fields.Selection(
         related='in_move_id.state',
-        string='State of the Return Stock Move', readonly=True)
+        string='State of the Return Stock Move', readonly=True, store=True)
     out_picking_id = fields.Many2one(
         'stock.picking', related='out_move_id.picking_id',
-        string='Delivery Order', readonly=True)
+        string='Delivery Order', readonly=True, store=True)
     in_picking_id = fields.Many2one(
         'stock.picking', related='in_move_id.picking_id',
-        string='Return Picking', readonly=True)
+        string='Return Picking', readonly=True, store=True)
     extension_order_line_ids = fields.One2many(
         'sale.order.line', 'extension_rental_id',
         string='Rental Extensions', readonly=True)
@@ -161,10 +174,10 @@ class SaleRental(models.Model):
         string='Sell Stock Move', readonly=True, store=True)
     sell_state = fields.Selection(
         related='sell_move_id.state',
-        string='State of the Sell Stock Move', readonly=True)
+        string='State of the Sell Stock Move', readonly=True, store=True)
     sell_picking_id = fields.Many2one(
         'stock.picking', related='sell_move_id.picking_id',
-        string='Sell Delivery Order', readonly=True)
+        string='Sell Delivery Order', readonly=True, store=True)
     end_date = fields.Date(
         compute='_compute_end_date', string='End Date (extensions included)',
         readonly=True,
