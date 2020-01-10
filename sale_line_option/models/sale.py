@@ -58,7 +58,7 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('option_ids')
     def _onchange_option(self):
-        self.price_unit = sum(self.option_ids.mapped('line_price'))
+        self.price_unit = sum(self.option_ids.mapped('line_price_unit'))
 
     @api.onchange('product_uom', 'product_uom_qty')
     def product_uom_change(self):
@@ -104,6 +104,7 @@ class SaleOrderLineOption(models.Model):
     invalid_qty = fields.Boolean(
         compute='_compute_invalid_qty', store=True,
         help="Can be used to prevent confirmed sale order")
+    line_price_unit = fields.Float(required=True, digits=dp.get_precision('Product Price'), default=0.0)#compute='_compute_price', store=True)
     line_price = fields.Float(compute='_compute_price', store=True)
     product_uom_id = fields.Many2one('uom.uom',
                                      related='bom_line_id.product_uom_id',
@@ -130,6 +131,20 @@ class SaleOrderLineOption(models.Model):
                     record.bom_line_id = line
                     break
 
+    @api.onchange('product_id')
+    def product_id_change(self):
+        if self.product_id and self.sale_line_id.pricelist_id:
+            self.line_price_unit = self._get_bom_line_price()
+        else:
+            self.line_price_unit = 0
+
+    @api.onchange('self.bom_line_id.product_uom_id', 'qty')
+    def product_uom_change(self):
+        if self.product_id and self.sale_line_id.pricelist_id:
+            self.line_price_unit = self._get_bom_line_price()
+        else:
+            self.line_price_unit = 0
+
     def _get_bom_line_price(self):
         self.ensure_one()
         ctx = {'uom': self.bom_line_id.product_uom_id.id}
@@ -140,14 +155,15 @@ class SaleOrderLineOption(models.Model):
             self.product_id.id,
             self.qty * self.sale_line_id.product_uom_qty,
             self.sale_line_id.order_id.partner_id.id)
-        return price[pricelist.id] * self.qty
+        return price[pricelist.id]
 
     @api.depends('qty', 'product_id', 'sale_line_id.product_uom_qty')
     def _compute_price(self):
         for record in self:
             if record.product_id and record.sale_line_id.pricelist_id:
-                record.line_price = record._get_bom_line_price()
+                record.line_price = record.line_price_unit * record.qty
             else:
+                record.line_price_unit = 0
                 record.line_price = 0
 
     def _is_quantity_valid(self, record):
@@ -177,4 +193,8 @@ class SaleOrderLineOption(models.Model):
                         "The quantity is not between the max and the min"
                         )
                     }
-                }
+                    }
+
+    @api.onchange('line_price_unit')
+    def onchange_line_price_unit(self):
+        self._compute_price()
