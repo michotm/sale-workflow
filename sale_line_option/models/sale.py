@@ -54,11 +54,13 @@ class SaleOrderLine(models.Model):
                     options.append(
                         (0, 0, self._prepare_sale_line_option(bline)))
             self.option_ids = options
+            self.option_ids._compute_price()
+            self._onchange_option()
         return res
 
     @api.onchange('option_ids')
     def _onchange_option(self):
-        self.price_unit = sum(self.option_ids.mapped('line_price_unit'))
+        self.price_unit = sum(self.option_ids.mapped('line_price'))/self.product_uom_qty
 
     @api.onchange('product_uom', 'product_uom_qty')
     def product_uom_change(self):
@@ -161,6 +163,8 @@ class SaleOrderLineOption(models.Model):
     def _compute_price(self):
         for record in self:
             if record.product_id and record.sale_line_id.pricelist_id:
+                if not record.line_price_unit:
+                    record.line_price_unit = record._get_bom_line_price()
                 record.line_price = record.line_price_unit * record.qty
             else:
                 record.line_price_unit = 0
