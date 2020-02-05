@@ -109,8 +109,6 @@ class SaleOrderLine(models.Model):
     @api.onchange('end_date')
     def end_date_change(self):
         if self.end_date:
-            if self.start_date and self.start_date > self.end_date:
-                self.start_date = self.end_date
             if self.start_date:
                 number_of_days = (
                     fields.Date.from_string(self.end_date) -

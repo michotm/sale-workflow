@@ -24,7 +24,9 @@ class SaleOrder(models.Model):
         for order in self:
             for line in order.order_line:
                 if line.rental_type == 'new_rental':
-                    self.env['sale.rental'].create(line._prepare_rental())
+                    existing_rentals = self.env['sale.rental'].search([('start_order_line_id', '=', line.id)])
+                    if not existing_rentals:
+                        self.env['sale.rental'].create(line._prepare_rental())
                 elif line.rental_type == 'rental_extension':
                     line.extension_rental_id.in_move_id.date_expected =\
                         line.end_date
