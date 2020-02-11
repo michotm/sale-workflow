@@ -121,7 +121,6 @@ class SaleOrderLineOption(models.Model):
     @api.model
     def create(self, vals):
         res = super(SaleOrderLineOption, self).create(vals)
-        res.sale_line_id._onchange_option()
         return res
 
     @api.depends('product_id')
