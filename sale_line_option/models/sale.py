@@ -60,7 +60,8 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('option_ids')
     def _onchange_option(self):
-        self.price_unit = sum(self.option_ids.mapped('line_price'))/self.product_uom_qty
+        if self.product_uom_qty != 0:
+            self.price_unit = sum(self.option_ids.mapped('line_price'))/self.product_uom_qty
 
     @api.onchange('product_uom', 'product_uom_qty')
     def product_uom_change(self):
