@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="tax_1" model="account.tax">
+        <field name="name">Tax display amount</field>
+        <field eval="0.15" name="amount"/>
+        <field name="amount_type">percent</field>
+        <field name="type_tax_use">sale</field>
+    </record>
+
+</odoo>

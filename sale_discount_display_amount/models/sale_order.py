@@ -2,19 +2,19 @@
 # Copyright 2018 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models
+from openerp import api, fields, models
 
 
 class SaleOrder(models.Model):
 
     _inherit = 'sale.order'
 
-    discount_total = fields.Monetary(
+    discount_total = fields.Float(
         compute='_compute_discount',
         string='Discount Subtotal',
         readonly=True,
         store=True)
-    price_total_no_discount = fields.Monetary(
+    price_total_no_discount = fields.Float(
         compute='_compute_discount',
         string='Subtotal Without Discount',
         readonly=True,

@@ -2,7 +2,7 @@
 # Copyright 2018 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo.tests.common import TransactionCase
+from openerp.tests.common import TransactionCase
 
 
 class TestDiscountDisplay(TransactionCase):
@@ -20,7 +20,9 @@ class TestDiscountDisplay(TransactionCase):
         self.env['sale.order.line'].create(
             {'order_id': so.id,
              'product_id': product1.id,
-             'price_unit': 30.75})
+             'price_unit': 30.75,
+             'tax_id': [(6, 0, [self.env.ref('sale_discount_display_amount.tax_1').id])]
+        })
 
         first_line = so.order_line[0]
         first_line.discount = 10

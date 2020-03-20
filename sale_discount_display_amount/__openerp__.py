@@ -7,7 +7,7 @@
     'summary': """
         This addon intends to display the amount of the discount computed on
         sale_order_line and sale_order level""",
-    'version': '10.0.1.0.0',
+    'version': '8.0.1.0.0',
     'license': 'AGPL-3',
     'author': 'ACSONE SA/NV,Odoo Community Association (OCA)',
     'website': 'http://www.acsone.eu',
@@ -16,6 +16,9 @@
     ],
     'data': [
         'views/sale_view.xml'
+    ],
+    "demo": [
+        "demo/account_demo.xml",
     ],
     'pre_init_hook': 'pre_init_hook',
     'post_init_hook': 'post_init_hook',
