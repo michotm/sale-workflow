@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_due_date_policy" model="ir.cron">
+        <field name="name">Sale order due date reached</field>
+        <field name="model_id" ref="model_sale_order_line"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_due_date_reached()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+</odoo>
