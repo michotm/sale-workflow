@@ -15,7 +15,8 @@ class TestInvoiceSaleOrderLines(TransactionCase):
         customer2 = self.env.ref("base.res_partner_4")
         product_id = self.env.ref("product.product_product_1")  # service
         self.sale1 = self._create_sale_order(customer1)
-        self.lines = self._create_sale_order_line(self.sale1, product_id, 2, 2)
+        self.line1 = self._create_sale_order_line(self.sale1, product_id, 2, 2)
+        self.lines = self.line1
         self.lines |= self._create_sale_order_line(
             self.sale1, product_id, 4, 1
         )
@@ -53,9 +54,15 @@ class TestInvoiceSaleOrderLines(TransactionCase):
         self.sale1.action_confirm()
         self.sale2.action_confirm()
         self.sale3.action_confirm()
+        for line in self.lines:
+            line.qty_delivered_manual = line.product_uom_qty
+        res = self.line1.action_invoice_create()
+        self.assertEquals("account.invoice", res["res_model"])
+        invoices = self.lines.mapped("invoice_lines").mapped("invoice_id")
+        self.assertEquals(1, len(invoices))
+        self.assertEquals(4, invoices.amount_total)
         res = self.lines.action_invoice_create()
         self.assertEquals("account.invoice", res["res_model"])
         invoices = self.lines.mapped("invoice_lines").mapped("invoice_id")
-        self.assertEquals(2, len(invoices))
-        self.assertEquals(8, invoices[0].amount_total)
-        self.assertEquals(8, invoices[1].amount_total)
+        self.assertEquals(3, len(invoices))
+        self.assertEquals(16, sum(invoices.mapped("amount_total")))
