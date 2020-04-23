@@ -78,6 +78,7 @@ class SalePromotionRule(models.Model):
         selection=[
             ("one_per_partner", "One per partner"),
             ("no_restriction", "No restriction"),
+            ("valid_once", "One usage",)
         ],
         default="no_restriction",
         required=True,
@@ -102,6 +103,21 @@ this rule. Otherwise the process will loop over each rule and apply it
 according to the strategy
 """,
     )
+
+    count_usage = fields.Integer(
+        string="Number of use",
+        help="Total number sale order which use this rule",
+        compute="_calc_count_usage",
+    )
+
+    def _calc_count_usage(self):
+        for rec in self:
+            count = self.env["sale.order"].search_count([
+                '|',
+                ['promotion_rule_ids', 'in', rec.id],
+                ['coupon_promotion_rule_id', '=', rec.id],
+            ])
+            rec.count_usage = count
 
     _sql_constraints = [
         ("code_unique", "UNIQUE (code)", _("Discount code must be unique !"))
@@ -216,6 +232,8 @@ according to the strategy
                 ]
             )
             return not rule_is_used
+        if self.usage_restriction == 'valid_once':
+            return self.count_usage < 1
         return True
 
     def _check_valid_multi_rule_strategy(self, order):
