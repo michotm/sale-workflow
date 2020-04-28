@@ -68,6 +68,11 @@
                             <field name="date_to" nolabel="1"/>
                             <field name="minimal_amount" colspan="3"/>
                             <field name="is_minimal_amount_tax_incl" colspan="3"/>
+                            <field name="budget_max"
+                                   attrs="{'required': [('usage_restriction', '=', 'max_budget')]}"/>
+                            <field name="budget_spent"
+                                   attrs="{'required': [('usage_restriction', '=', 'max_budget')]}"/>
+
                             <field name="only_newsletter" colspan="3"/>
                             <field name="restrict_pricelist_ids"
                                    widget="many2many_tags"
