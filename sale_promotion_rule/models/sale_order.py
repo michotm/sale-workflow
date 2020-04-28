@@ -54,8 +54,7 @@ class SaleOrder(models.Model):
     @api.multi
     def action_confirm(self):
         res = super().action_confirm()
-        for order in self:
-            order.applied_promotion_rule_ids.check_used()
+        self.applied_promotion_rule_ids.check_used()
         return res
 
     @api.multi

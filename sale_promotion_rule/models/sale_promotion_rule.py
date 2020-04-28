@@ -144,9 +144,7 @@ according to the strategy
                 if rec.discount_type == "amount_tax_included":
                     rec.budget_spent = -sum(lines.mapped("price_total"))
                 else:
-                    rec.budget_spent = -sum(
-                        lines.mapped("untaxed_amount_to_invoice")
-                    )
+                    rec.budget_spent = -sum(lines.mapped("price_subtotal"))
                 if rec.usage_restriction == "max_budget":
                     rec.discount_amount = rec.budget_max - rec.budget_spent
 
