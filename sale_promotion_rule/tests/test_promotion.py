@@ -45,7 +45,7 @@ class AbstractCommonPromotionCase(object):
             "discount_amount": 20.00,
             "discount_type": "amount_tax_excluded",
             "discount_product_id": self.discount_product_id.id,
-            "discount_amount_currency_id": self.env.user.company_id.currency_id.id,
+            "currency_id": self.env.user.company_id.currency_id.id,
             "minimal_amount": 50.00,
             "multi_rule_strategy": "use_best",
         }

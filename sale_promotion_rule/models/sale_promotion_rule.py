@@ -38,10 +38,11 @@ class SalePromotionRule(models.Model):
     discount_amount = fields.Float(
         digits=dp.get_precision("Discount"), required=True
     )
-    discount_amount_currency_id = fields.Many2one(
+    currency_id = fields.Many2one(
         "res.currency",
         string="Discount Amount Currency",
         default=lambda a: a._get_default_currency_id(),
+        oldname="discount_amount_currency_id",
     )
     discount_type = fields.Selection(
         selection=[
@@ -140,14 +141,12 @@ according to the strategy
                 raise ValidationError(
                     _(
                         "You must specify a promotion product for discount rule "
-                        "applaying a specific amount"
+                        "applying a specific amount"
                     )
                 )
 
-    @api.constrains(
-        "promo_type", "discount_type", "discount_amount_currency_id"
-    )
-    def _check_discount_amount_currency_id(self):
+    @api.constrains("promo_type", "discount_type", "currency_id")
+    def _check_currency_id(self):
         for record in self:
             if record.promo_type != "discount":
                 continue
@@ -156,10 +155,10 @@ according to the strategy
                 "amount_tax_excluded",
             ):
                 continue
-            if not record.discount_amount_currency_id:
+            if not record.currency_id:
                 raise ValidationError(
                     _(
-                        "You must specify a currency for discount rule applaying "
+                        "You must specify a currency for discount rule applying "
                         "a specific amount"
                     )
                 )
@@ -469,7 +468,7 @@ according to the strategy
         taxes = self.discount_product_id.taxes_id
         if order.fiscal_position_id:
             taxes = order.fiscal_position_id.map_tax(taxes)
-        price = self.discount_amount_currency_id._convert(
+        price = self.currency_id._convert(
             from_amount=self.discount_amount,
             to_currency=order.currency_id,
             company=order.company_id,
@@ -520,8 +519,11 @@ according to the strategy
         amount according to the price decision while the computed price doesn't
         match the expected amount or the sign of the difference changes
         """
-        expected_discount = self.discount_amount_currency_id._convert(
-            from_amount=self.discount_amount,
+        from_amount = min(self.discount_amount, order.amount_total)
+        if self.discount_type == "amount_tax_excluded":
+            from_amount = min(self.discount_amount, order.amount_untaxed)
+        expected_discount = self.currency_id._convert(
+            from_amount=from_amount,
             to_currency=order.currency_id,
             company=order.company_id,
             date=datetime.date.today(),
