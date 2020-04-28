@@ -209,6 +209,7 @@ class PromotionCase(TransactionCase, AbstractCommonPromotionCase):
         self.assertIn(
             self.promotion_rule_coupon, self.sale.applied_promotion_rule_ids
         )
+        self.sale.action_confirm()
         # If create a new sale order for the same partner, the same promotion
         # rule can't be used
         new_sale = self.sale.copy()
@@ -455,3 +456,85 @@ class PromotionCase(TransactionCase, AbstractCommonPromotionCase):
             20.0, so_line.discount,
         )
         self.assertEqual(old_amount_total - 20, self.sale.amount_total)
+
+    def test_remove_coupon_line(self):
+        self.promotion_rule_auto.minimal_amount = 999999999  # disable
+        amount_original = self.sale.amount_total
+        self.add_coupon_code(FIXED_AMOUNT_CODE)
+        to_unlink = self.env["sale.order.line"].browse()
+        for line in self.sale.order_line:
+            if line.is_promotion_line:
+                to_unlink |= line
+        to_unlink.unlink()
+        self.assertEqual(amount_original, self.sale.amount_total)
+        self.assertEqual(0, len(self.sale.promotion_rule_ids))
+
+    def test_used_coupon(self):
+        self.promotion_rule_auto.minimal_amount = 999999999  # disable
+        self.promotion_rule_coupon.usage_restriction = "valid_once"
+        self.add_coupon_code(VALID_COUPON_CODE)
+        self.sale.apply_promotions()
+        self.assertIn(
+            self.promotion_rule_coupon, self.sale.applied_promotion_rule_ids
+        )
+        # If create a new sale order, the same promotion rule CAN be used
+        new_sale = self.sale.copy()
+        new_sale.add_coupon(VALID_COUPON_CODE)
+        new_sale.apply_promotions()
+        self.assertIn(
+            self.promotion_rule_coupon, new_sale.applied_promotion_rule_ids
+        )
+        # When the first SO is confirmed, the promotion is removed from the
+        # other sale orders and CAN'T be applied anymore
+        self.sale.action_confirm()
+        self.assertNotIn(
+            self.promotion_rule_coupon, new_sale.applied_promotion_rule_ids
+        )
+        new_sale = self.sale.copy()
+        with self.assertRaises(UserError):
+            new_sale.add_coupon(VALID_COUPON_CODE)
+        new_sale.apply_promotions()
+        self.assertNotIn(
+            self.promotion_rule_coupon, new_sale.applied_promotion_rule_ids
+        )
+
+    def test_budget_rule(self):
+        self.promotion_rule_auto.minimal_amount = 999999999  # disable
+        budget_max = self.sale.amount_untaxed + 20
+        self.promotion_rule_fixed_amount.usage_restriction = "max_budget"
+        self.promotion_rule_fixed_amount.budget_max = budget_max
+        self.promotion_rule_fixed_amount.discount_amount = budget_max
+        self.add_coupon_code(FIXED_AMOUNT_CODE)
+        self.sale.apply_promotions()
+        self.assertIn(
+            self.promotion_rule_fixed_amount,
+            self.sale.applied_promotion_rule_ids,
+        )
+        self.assertEqual(self.promotion_rule_fixed_amount.budget_spent, 0)
+        self.sale.action_confirm()
+        self.assertEqual(
+            self.promotion_rule_fixed_amount.budget_spent, budget_max - 20
+        )
+        self.assertEqual(self.promotion_rule_fixed_amount.discount_amount, 20)
+        # We can use the rule again because there are 20 left
+        new_sale = self.sale.copy()
+        new_sale.add_coupon(FIXED_AMOUNT_CODE)
+        new_sale.apply_promotions()
+        self.assertIn(
+            self.promotion_rule_fixed_amount,
+            new_sale.applied_promotion_rule_ids,
+        )
+        new_sale.action_confirm()
+        self.assertEqual(
+            self.promotion_rule_fixed_amount.budget_spent, budget_max
+        )
+        # The rule cannot be used now
+        new_sale = self.sale.copy()
+        with self.assertRaises(UserError):
+            new_sale.add_coupon(FIXED_AMOUNT_CODE)
+        new_sale.apply_promotions()
+        self.assertNotIn(
+            self.promotion_rule_fixed_amount,
+            new_sale.applied_promotion_rule_ids,
+        )
+>>>>>>> 3d011a04c... [IMP] add valid_once and max_budget restriction_types

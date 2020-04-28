@@ -35,6 +35,24 @@ class SaleOrderLine(models.Model):
     is_promotion_line = fields.Boolean(
         help="True if the line has been added by a promotion rule"
     )
+    promotion_rule_id = fields.Many2one(
+        "sale.promotion.rule",
+        string="Promotion rule",
+        help="The promotion rule that originated this line",
+    )
+
+    def unlink(self):
+        for record in self:
+            if record.is_promotion_line:
+                # remove rule from sale_order
+                record.order_id.write(
+                    {
+                        "promotion_rule_ids": [
+                            (3, record.promotion_rule_id.id, 0)
+                        ]
+                    }
+                )
+        return super().unlink()
 
     @api.depends("promotion_rule_ids", "coupon_promotion_rule_id")
     def _compute_has_promotion_rules(self):

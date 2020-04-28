@@ -20,6 +20,7 @@ class SalePromotionRule(models.Model):
     _description = "Sale Promotion Rule"
 
     sequence = fields.Integer(default=10)
+    used = fields.Boolean(default=False, copy=False)
     rule_type = fields.Selection(
         selection=[("coupon", "Coupon"), ("auto", "Automatic")],
         required=True,
@@ -79,7 +80,8 @@ class SalePromotionRule(models.Model):
         selection=[
             ("one_per_partner", "One per partner"),
             ("no_restriction", "No restriction"),
-            ("valid_once", "One usage",)
+            ("valid_once", "One usage"),
+            ("max_budget", "Maximum budget"),
         ],
         default="no_restriction",
         required=True,
@@ -110,15 +112,43 @@ according to the strategy
         help="Total number sale order which use this rule",
         compute="_calc_count_usage",
     )
+    budget_spent = fields.Monetary(
+        "Budget Spent", compute="_calc_budget_spent"
+    )
+    budget_max = fields.Monetary("Budget Max")
 
     def _calc_count_usage(self):
         for rec in self:
-            count = self.env["sale.order"].search_count([
-                '|',
-                ['promotion_rule_ids', 'in', rec.id],
-                ['coupon_promotion_rule_id', '=', rec.id],
-            ])
+            count = self.env["sale.order"].search_count(
+                [
+                    ("state", "in", ["sale", "done"]),
+                    "|",
+                    ("promotion_rule_ids", "in", rec.ids),
+                    ("coupon_promotion_rule_id", "=", rec.id),
+                ]
+            )
             rec.count_usage = count
+
+    def _calc_budget_spent(self):
+        for rec in self:
+            lines = self.env["sale.order.line"].search(
+                [
+                    ("state", "in", ["sale", "done"]),
+                    ("promotion_rule_id", "=", rec.id),
+                    # "|",
+                    # ("promotion_rule_ids", "in", rec.ids),
+                    # ("coupon_promotion_rule_id", "=", rec.id),
+                ]
+            )
+            if lines:
+                if rec.discount_type == "amount_tax_included":
+                    rec.budget_spent = -sum(lines.mapped("price_total"))
+                else:
+                    rec.budget_spent = -sum(
+                        lines.mapped("untaxed_amount_to_invoice")
+                    )
+                if rec.usage_restriction == "max_budget":
+                    rec.discount_amount = rec.budget_max - rec.budget_spent
 
     _sql_constraints = [
         ("code_unique", "UNIQUE (code)", _("Discount code must be unique !"))
@@ -217,6 +247,43 @@ according to the strategy
             < 0
         )
 
+    @api.multi
+    def check_used(self):
+        for record in self:
+            record.used = False
+            record._calc_count_usage()
+            record._calc_budget_spent()
+            if record.usage_restriction == "one_per_partner":
+                if record.restrict_partner_ids and record.count_usage >= len(
+                    record.restrict_partner_ids
+                ):
+                    record.used = True
+            if record.usage_restriction == "valid_once":
+                if record.count_usage >= 1:
+                    record.used = True
+            if record.usage_restriction == "max_budget":
+                if record.budget_spent >= record.budget_max:
+                    record.used = True
+            # remove used promotions on pending sale orders
+            if record.used:
+                so_lines = self.env["sale.order.line"].search(
+                    [
+                        ("state", "not in", ["sale", "done"]),
+                        "|",
+                        ("promotion_rule_ids", "in", record.ids),
+                        ("coupon_promotion_rule_id", "=", record.id),
+                    ]
+                )
+                if record.rule_type == "coupon":
+                    so_lines.mapped("order_id").write(
+                        {"coupon_promotion_rule_id": False,}
+                    )
+                else:
+                    so_lines.mapped("order_id").write(
+                        {"promotion_rule_ids": [(3, record.id, 0)],}
+                    )
+                record._remove_promotions_lines(so_lines)
+
     def _check_valid_usage(self, order):
         self.ensure_one()
         if self.usage_restriction == "one_per_partner":
@@ -224,15 +291,15 @@ according to the strategy
                 [
                     ("id", "!=", order.id),
                     ("partner_id", "=", order.partner_id.id),
-                    ("state", "!=", "cancel"),
+                    ("state", "in", ["sale", "done"]),
                     "|",
                     ("promotion_rule_ids", "in", self.id),
                     ("coupon_promotion_rule_id", "=", self.id),
                 ]
             )
             return not rule_is_used
-        if self.usage_restriction == 'valid_once':
-            return self.count_usage < 1
+        if self.usage_restriction in ["valid_once", "max_budget"]:
+            return not self.used
         return True
 
     def _check_valid_multi_rule_strategy(self, order):
@@ -323,7 +390,11 @@ according to the strategy
     def apply_coupon(self, orders, coupon_code):
         """Add a coupon to orders"""
         coupon_rule = self.search(
-            [("code", "=ilike", coupon_code), ("rule_type", "=", "coupon")]
+            [
+                ("code", "=ilike", coupon_code),
+                ("rule_type", "=", "coupon"),
+                ("used", "=", False),
+            ]
         )
         if not coupon_rule:
             raise UserError(_("Code number %s is invalid") % coupon_code)
@@ -338,7 +409,9 @@ according to the strategy
     @api.model
     def apply_auto(self, orders):
         """Apply automatic promotion rules to the orders"""
-        auto_rules = self.search([("rule_type", "=", "auto")])
+        auto_rules = self.search(
+            [("rule_type", "=", "auto"), ("used", "=", False)]
+        )
         auto_rules._apply(orders)
 
     @api.model
@@ -474,6 +547,17 @@ according to the strategy
             company=order.company_id,
             date=datetime.date.today(),
         )
+        # Do not allow negative price sale orders
+        if (
+            self.discount_type == "amount_tax_included"
+            and price > order.amount_total
+        ):
+            price = order.amount_total
+        if (
+            self.discount_type == "amount_tax_excluded"
+            and price > order.amount_untaxed
+        ):
+            price = order.amount_untaxed
         if taxes:
             price_precision_digits = self.env[
                 "decimal.precision"
@@ -502,6 +586,7 @@ according to the strategy
             "product_id": self.discount_product_id.id,
             "price_unit": -price,
             "product_uom_qty": 1,
+            "promotion_rule_id": self.id,
             "is_promotion_line": True,
             "name": self.discount_product_id.name,
             "product_uom": self.discount_product_id.uom_id.id,
@@ -565,3 +650,9 @@ according to the strategy
             if new_diff != diff:
                 # not able to fix the rounding issue due to current precision
                 return price
+
+    def write(self, vals):
+        res = super().write(vals)
+        if any(vals.get(val) for val in ["usage_restriction", "budget_max"]):
+            self.check_used()
+        return res

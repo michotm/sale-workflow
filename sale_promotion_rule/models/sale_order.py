@@ -52,6 +52,13 @@ class SaleOrder(models.Model):
             )
 
     @api.multi
+    def action_confirm(self):
+        res = super().action_confirm()
+        for order in self:
+            order.applied_promotion_rule_ids.check_used()
+        return res
+
+    @api.multi
     def add_coupon(self, coupon_code):
         self.env["sale.promotion.rule"].apply_coupon(self, coupon_code)
 
