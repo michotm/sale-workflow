@@ -219,11 +219,12 @@ according to the strategy
             or (self.date_from and fields.Date.today() < self.date_from)
         )
 
-    def _check_valid_total_amount(self, order):
+    def _get_valid_total_amount(self, order, exclude_promotions=True):
         self.ensure_one()
-        precision = self.env["decimal.precision"].precision_get("Discount")
-        excluded_lines = self._get_lines_excluded_from_total_amount(order)
-        included_lines = order.order_line - excluded_lines
+        included_lines = order.order_line
+        if exclude_promotions:
+            excluded_lines = self._get_lines_excluded_from_total_amount(order)
+            included_lines = order.order_line - excluded_lines
         amount = 0
         for line in included_lines:
             # we need to ignore already applied promotions
@@ -238,9 +239,15 @@ according to the strategy
                 amount += taxes["total_included"]
             else:
                 amount += taxes["total_excluded"]
+        return amount
+
+    def _check_valid_total_amount(self, order):
+        precision = self.env["decimal.precision"].precision_get("Discount")
         return (
             float_compare(
-                self.minimal_amount, amount, precision_digits=precision
+                self.minimal_amount,
+                self._get_valid_total_amount(order),
+                precision_digits=precision,
             )
             < 0
         )
@@ -545,17 +552,8 @@ according to the strategy
             company=order.company_id,
             date=datetime.date.today(),
         )
-        # Do not allow negative price sale orders
-        if (
-            self.discount_type == "amount_tax_included"
-            and price > order.amount_total
-        ):
-            price = order.amount_total
-        if (
-            self.discount_type == "amount_tax_excluded"
-            and price > order.amount_untaxed
-        ):
-            price = order.amount_untaxed
+        # Do not allow to reduce price under minimal_amount
+        price = min(price, self._get_valid_total_amount(order))
         if taxes:
             price_precision_digits = self.env[
                 "decimal.precision"
@@ -602,7 +600,9 @@ according to the strategy
         amount according to the price decision while the computed price doesn't
         match the expected amount or the sign of the difference changes
         """
-        from_amount = min(self.discount_amount, order.amount_total)
+        from_amount = min(
+            self.discount_amount, order.amount_total - self.minimal_amount
+        )
         if self.discount_type == "amount_tax_excluded":
             from_amount = min(self.discount_amount, order.amount_untaxed)
         expected_discount = self.currency_id._convert(
