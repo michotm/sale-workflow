@@ -43,7 +43,7 @@ class SaleOrderLine(models.Model):
 
     def unlink(self):
         for record in self:
-            if record.is_promotion_line:
+            if record.is_promotion_line and record.order_id:
                 # remove rule from sale_order
                 record.order_id.write(
                     {
