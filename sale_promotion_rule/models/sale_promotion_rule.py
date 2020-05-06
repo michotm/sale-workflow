@@ -600,11 +600,16 @@ according to the strategy
         amount according to the price decision while the computed price doesn't
         match the expected amount or the sign of the difference changes
         """
+        order_amount = order.amount_total
+        order_amount_untaxed = order.amount_untaxed
+        for line in self._get_lines_excluded_from_total_amount(order):
+            order_amount -= line.price_total
+            order_amount_untaxed -= line.price_total - line.price_tax
         from_amount = min(
-            self.discount_amount, order.amount_total - self.minimal_amount
+            self.discount_amount, order_amount - self.minimal_amount
         )
         if self.discount_type == "amount_tax_excluded":
-            from_amount = min(self.discount_amount, order.amount_untaxed)
+            from_amount = min(self.discount_amount, order_amount_untaxed)
         expected_discount = self.currency_id._convert(
             from_amount=from_amount,
             to_currency=order.currency_id,
