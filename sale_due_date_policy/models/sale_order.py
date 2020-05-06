@@ -29,12 +29,3 @@ class SaleOrder(models.Model):
             {"due_date_reached": False}
         )
 
-    @api.onchange("partner_id")
-    def onchange_partner_id(self):
-        super().onchange_partner_id()
-        for rec in self:
-            rec.due_date_term_id = (
-                rec.commercial_partner_id.due_date_term_id
-                and rec.commercial_partner_id.due_date_term_id.id
-                or False,
-            )

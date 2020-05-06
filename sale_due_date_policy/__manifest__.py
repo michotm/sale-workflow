@@ -14,5 +14,5 @@
     "application": False,
     "installable": True,
     "depends": ["sale_management", "account"],
-    "data": ["data/ir_cron.xml", "views/sale_order.xml", "views/partner.xml"],
+    "data": ["data/ir_cron.xml", "views/sale_order.xml"],
 }
