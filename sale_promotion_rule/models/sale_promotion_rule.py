@@ -9,6 +9,7 @@ import datetime
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.osv import expression
 from odoo.tools import float_compare, float_round
 import odoo.addons.decimal_precision as dp
 
@@ -117,28 +118,41 @@ according to the strategy
     )
     budget_max = fields.Monetary("Budget Max")
 
+    def _get_order_promotions_considered_used_domain(self):
+        """
+        This functions allows to declare for which sale order state you want to
+        consider the promotions in it as used. For instance when the SO is
+        confirmed or when it is still a draft.
+        """
+        return expression.normalize_domain(
+            [("state", "in", ["sale", "done"]),]
+        )
+
     def _calc_count_usage(self):
         for rec in self:
-            count = self.env["sale.order"].search_count(
-                [
-                    ("state", "in", ["sale", "done"]),
-                    "|",
-                    ("promotion_rule_ids", "in", rec.ids),
-                    ("coupon_promotion_rule_id", "=", rec.id),
-                ]
+            count = self.env["sale.order.line"].search_count(
+                expression.AND(
+                    [
+                        self._get_order_promotions_considered_used_domain(),
+                        [
+                            "|",
+                            ("promotion_rule_ids", "in", rec.ids),
+                            ("coupon_promotion_rule_id", "=", rec.id),
+                        ],
+                    ]
+                )
             )
             rec.count_usage = count
 
     def _calc_budget_spent(self):
         for rec in self:
             lines = self.env["sale.order.line"].search(
-                [
-                    ("state", "in", ["sale", "done"]),
-                    ("promotion_rule_id", "=", rec.id),
-                    # "|",
-                    # ("promotion_rule_ids", "in", rec.ids),
-                    # ("coupon_promotion_rule_id", "=", rec.id),
-                ]
+                expression.AND(
+                    [
+                        self._get_order_promotions_considered_used_domain(),
+                        [("promotion_rule_id", "=", rec.id),],
+                    ]
+                )
             )
             if lines:
                 if rec.discount_type == "amount_tax_included":
