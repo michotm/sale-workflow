@@ -451,17 +451,20 @@ according to the strategy
         for order, _lines in list(lines_by_order.items()):
             vals = []
             for line in _lines:
-                if line.has_promotion_rules:
+                if line.is_promotion_line:
+                    vals.append((2, line.id))
+                elif line.has_promotion_rules:
                     v = {
                         "discount": 0.0,
                         "coupon_promotion_rule_id": False,
                         "promotion_rule_ids": [(5)],
                     }
                     vals.append((1, line.id, v))
-                elif line.is_promotion_line:
-                    vals.append((2, line.id))
             if vals:
                 order.write({"order_line": vals})
+                # re-Apply pricelist discount
+                for line in order.order_line:
+                    line._onchange_discount()
 
     @api.multi
     def _apply(self, orders):
