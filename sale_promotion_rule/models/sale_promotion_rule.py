@@ -167,7 +167,8 @@ according to the strategy
     ]
 
     def _get_lines_excluded_from_total_amount(self, order):
-        return self.env["sale.order.line"].browse()
+        # Excludes itself
+        return order.order_line.filtered(lambda l: l.promotion_rule_id == self)
 
     @api.constrains("discount_product_id", "promo_type", "discount_type")
     def _check_promotion_product_id(self):
@@ -233,12 +234,10 @@ according to the strategy
             or (self.date_from and fields.Date.today() < self.date_from)
         )
 
-    def _get_valid_total_amount(self, order, exclude_promotions=True):
+    def _get_valid_total_amount(self, order):
         self.ensure_one()
-        included_lines = order.order_line
-        if exclude_promotions:
-            excluded_lines = self._get_lines_excluded_from_total_amount(order)
-            included_lines = order.order_line - excluded_lines
+        excluded_lines = self._get_lines_excluded_from_total_amount(order)
+        included_lines = order.order_line - excluded_lines
         amount = 0
         for line in included_lines:
             # we need to ignore already applied promotions
@@ -306,17 +305,18 @@ according to the strategy
     def _check_valid_usage(self, order):
         self.ensure_one()
         if self.usage_restriction == "one_per_partner":
-            rule_is_used = self.env["sale.order"].search_count(
+            rule_in_use = self.env["sale.order.line"].search(
+                    expression.AND([self._get_order_promotions_considered_used_domain(),
                 [
-                    ("id", "!=", order.id),
-                    ("partner_id", "=", order.partner_id.id),
-                    ("state", "in", ["sale", "done"]),
+                    ("order_id", "!=", order.id),
+                    ("order_id.partner_id", "=", order.partner_id.id),
                     "|",
                     ("promotion_rule_ids", "in", self.id),
                     ("coupon_promotion_rule_id", "=", self.id),
                 ]
-            )
-            return not rule_is_used
+            ]))
+            # Do not count itself in used rules
+            return len(rule_in_use - self._get_lines_excluded_from_total_amount(order)) == 0
         if self.usage_restriction in ["valid_once", "max_budget"]:
             return not self.used
         return True
@@ -324,7 +324,7 @@ according to the strategy
     def _check_valid_multi_rule_strategy(self, order):
         self.ensure_one()
         if self.multi_rule_strategy == "exclusive":
-            return not order.applied_promotion_rule_ids
+            return len(order.mapped("order_line").mapped("applied_promotion_rule_ids") - self) == 0
         return True
 
     def _check_valid_rule_type(self, order):
@@ -397,8 +397,8 @@ according to the strategy
         orders_by_coupon = defaultdict(self.env["sale.order"].browse)
         for order in orders:
             orders_by_coupon[order.coupon_promotion_rule_id] += order
-        # first reset
-        self.remove_promotions(orders)
+        # first reset (applied list only)
+        self.remove_promotions(orders, remove_lines=False)
         for coupon, _orders in list(orders_by_coupon.items()):
             # coupon must be always applied first
             if coupon:
@@ -434,11 +434,12 @@ according to the strategy
         auto_rules._apply(orders)
 
     @api.model
-    def remove_promotions(self, orders):
+    def remove_promotions(self, orders, remove_lines=True):
         orders.write(
             {"promotion_rule_ids": [(5)], "coupon_promotion_rule_id": False}
         )
-        self._remove_promotions_lines(orders.mapped("order_line"))
+        if remove_lines:
+            self._remove_promotions_lines(orders.mapped("order_line"))
 
     @api.model
     def _remove_promotions_lines(self, lines):
@@ -472,13 +473,31 @@ according to the strategy
             orders_valid = orders.filtered(
                 lambda o, r=rule: r._is_promotion_valid(o)
             )
+            orders_invalid = orders - orders_valid
+            for order in orders_invalid:
+                # remove itself when necessary
+                self._remove_promotions_lines(order.order_line.filtered(lambda l: l.promotion_rule_id == self or l.coupon_promotion_rule_id == self or self in l.promotion_rule_ids))
             if not orders_valid:
                 continue
-            rule._apply_rule_to_order_lines(orders_valid.mapped("order_line"))
-            if rule.rule_type == "coupon":
-                orders_valid.write({"coupon_promotion_rule_id": rule.id})
-            else:
-                orders_valid.write({"promotion_rule_ids": [(4, rule.id)]})
+            for order in orders_valid:
+                order_line_vals = rule._apply_rule_to_order_lines(
+                    order.mapped("order_line")
+                )
+                order_line_vals.extend(rule._apply_rule_to_orders(order))
+                if rule.rule_type == "coupon":
+                    order.write(
+                        {
+                            "coupon_promotion_rule_id": rule.id,
+                            "order_line": order_line_vals,
+                        }
+                    )
+                else:
+                    order.write(
+                        {
+                            "promotion_rule_ids": [(4, rule.id)],
+                            "order_line": order_line_vals,
+                        }
+                    )
 
     @api.multi
     def _apply_rule_to_order_lines(self, lines):
@@ -487,7 +506,17 @@ according to the strategy
             lambda l, r=self: r._is_promotion_valid_for_line(l)
         )
         if self.promo_type == "discount":
-            self._apply_discount_to_order_lines(lines)
+            return self._apply_discount_to_order_lines(lines)
+        else:
+            raise ValidationError(
+                _("Not supported promotion type %s") % self.promo_type
+            )
+
+    @api.multi
+    def _apply_rule_to_orders(self, order):
+        self.ensure_one()
+        if self.promo_type == "discount":
+            return self._apply_discount_to_order(order)
         else:
             raise ValidationError(
                 _("Not supported promotion type %s") % self.promo_type
@@ -518,13 +547,13 @@ according to the strategy
         # update lines from the order to avoid to trigger the compute
         # methods on each line updated. Indeed, update on a X2many field
         # is always done in norecompute on the parent...
+        vals = []
         for order, _lines in list(lines_by_order.items()):
             discount_by_line = {}
             if self.discount_type == "percentage":
                 discount_by_line = self._compute_percent_discount_by_lines(
                     order, lines
                 )
-            vals = []
             for line in _lines:
                 percent_discount = discount_by_line.get(line, 0.0)
                 discount = line.discount
@@ -545,16 +574,35 @@ according to the strategy
                         "promotion_rule_ids": [(4, self.id)],
                     }
                 vals.append((1, line.id, v))
-            if self.discount_type in (
-                "amount_tax_excluded",
-                "amount_tax_included",
-            ):
-                order_line_discount = self._prepare_order_line_discount(
-                    order, lines
-                )
-                vals.append((0, None, order_line_discount))
-            if vals:
-                order.write({"order_line": vals})
+        return vals
+
+    @api.multi
+    def _apply_discount_to_order(self, order):
+        self.ensure_one()
+        if not self.promo_type == "discount":
+            return
+        if self.discount_type in (
+            "amount_tax_excluded",
+            "amount_tax_included",
+        ):
+            lines = order.order_line.filtered(
+                lambda l, r=self: r._is_promotion_valid_for_line(l)
+            )
+            order_line_discount_vals = self._prepare_order_line_discount(
+                order, lines
+            )
+            existing_order_line = order.mapped("order_line").filtered(
+                lambda l: l.promotion_rule_id == self
+            )
+            if len(existing_order_line) > 0:
+                if order_line_discount_vals["price_unit"] == 0:
+                    return [(6, 0, existing_order_line.id)]
+                return [(1, existing_order_line.id, order_line_discount_vals)]
+            else:
+                if order_line_discount_vals["price_unit"] == 0:
+                    return []
+                return [(0, None, order_line_discount_vals)]
+        return []
 
     @api.multi
     def _prepare_order_line_discount(self, order, lines):
