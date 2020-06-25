@@ -268,22 +268,22 @@ according to the strategy
     @api.multi
     def check_used(self):
         for record in self:
-            record.used = False
+            used = False
             record._calc_count_usage()
             record._calc_budget_spent()
             if record.usage_restriction == "one_per_partner":
                 if record.restrict_partner_ids and record.count_usage >= len(
                     record.restrict_partner_ids
                 ):
-                    record.used = True
+                    used = True
             if record.usage_restriction == "valid_once":
                 if record.count_usage >= 1:
-                    record.used = True
+                    used = True
             if record.usage_restriction == "max_budget":
                 if record.budget_spent >= record.budget_max:
-                    record.used = True
+                    used = True
             # remove used promotions on pending sale orders
-            if record.used:
+            if used:
                 so_lines = self.env["sale.order.line"].search(
                     [
                         ("state", "not in", ["sale", "done"]),
@@ -301,6 +301,7 @@ according to the strategy
                         {"promotion_rule_ids": [(3, record.id, 0)],}
                     )
                 record._remove_promotions_lines(so_lines)
+            record.write({"used": used})
 
     def _check_valid_usage(self, order):
         self.ensure_one()
