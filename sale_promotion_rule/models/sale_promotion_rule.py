@@ -252,7 +252,10 @@ according to the strategy
                 amount += taxes["total_included"]
             else:
                 amount += taxes["total_excluded"]
-        return amount
+        order_amount = order.amount_total
+        for line in excluded_lines:
+            order_amount -= line.price_total
+        return min(amount, order_amount - self.minimal_amount)
 
     def _check_valid_total_amount(self, order):
         precision = self.env["decimal.precision"].precision_get("Discount")
