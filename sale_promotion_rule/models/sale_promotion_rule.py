@@ -649,8 +649,8 @@ according to the strategy
             )
         return {
             "product_id": self.discount_product_id.id,
-            "price_unit": -price,
-            "product_uom_qty": 1,
+            "price_unit": price,
+            "product_uom_qty": -1,
             "promotion_rule_id": self.id,
             "is_promotion_line": True,
             "name": self.discount_product_id.name,
