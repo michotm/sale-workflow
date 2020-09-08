@@ -28,7 +28,7 @@ class SaleOrderLine(models.Model):
 
     def _prepare_due_date_reached_domain(self):
         domain = [
-            ("state", "=", "sale"),
+            ("state", "in", ["sale", "done"]),
             ("qty_delivered_method", "=", "due_date_reached"),
             ("due_date_reached", "=", False),
         ]
