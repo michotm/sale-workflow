@@ -1,0 +1,11 @@
+bank-payment
+stock-logistics-workflow
+stock-logistics-transport
+account-closing
+server-tools
+manufacture
+account-invoicing
+product-attribute
+partner-contact
+web
+bank-statement-reconcile
