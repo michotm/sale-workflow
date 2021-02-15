@@ -12,5 +12,6 @@ def post_init_hook(cr, pool):
     Fetches all the sale order and resets the sequence of the order lines
     """
     env = Environment(cr, SUPERUSER_ID, {})
-    sale = env['sale.order'].search([])
+    sale = env['sale.order'].search([('state', 'not in', ['cancel', 'done', 'draft'])])
+    sale |= env['sale.order'].search([('state', 'in', ['done', 'draft']), ('create_date', '>=', '2021-01-01 00:00:00')])
     sale._reset_sequence()
