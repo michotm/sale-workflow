@@ -34,17 +34,31 @@ class TestSaleOrderLotGenerator(test_common.SingleTransactionCase):
         self.order1.action_confirm()
         lot_number = "%s-%03d" % (self.order1.name, 1)
         self.assertEqual(self.sol1.lot_id.name, lot_number)
-        # add second line after order confirm
+        # add second line after order redraft
+        self.order1.action_cancel()
+        self.order1.action_draft()
         self.sol2 = self.env["sale.order.line"].create(
             {
-                "name": "sol1",
+                "name": "sol2",
                 "order_id": self.order1.id,
                 "product_id": self.prd_acoustic.id,
                 "product_uom_qty": 1,
             }
         )
+        self.order1.action_confirm()
         lot_number = "%s-%03d" % (self.order1.name, 2)
         self.assertEqual(self.sol2.lot_id.name, lot_number)
+        # add third line after order confirm
+        self.sol3 = self.env["sale.order.line"].create(
+            {
+                "name": "sol3",
+                "order_id": self.order1.id,
+                "product_id": self.prd_acoustic.id,
+                "product_uom_qty": 1,
+            }
+        )
+        lot_number = "%s-%03d" % (self.order1.name, 3)
+        self.assertEqual(self.sol3.lot_id.name, lot_number)
         for line in self.order1.picking_ids.move_line_ids:
             if line.product_id.id == self.prd_flipover.id:
                 self.assertEqual(line.lot_id, self.sol1.lot_id)
