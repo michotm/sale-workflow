@@ -5,66 +5,44 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <button name="action_draft" position="after">
+            <xpath expr="//button[@name='action_draft']" position="after">
                 <button
                     name="%(action_view_account_voucher_wizard)d"
-                    string="Pay sale advanced"
+                    string="Create Payment"
                     type="action"
                     groups="account.group_account_invoice"
-                    attrs="{'invisible': ['|',('state', 'in', ['done','cancel']),('invoice_status', 'in', ['invoiced'])]}"
+                    attrs="{'invisible': ['|', ('state', 'in', ['done','cancel']), ('is_allocated', '=', True)]}"
                 />
-            </button>
-            <notebook position="inside">
-                <page string="Payment advances" groups="account.group_account_invoice">
+                <field name="is_allocated" invisible="1" />
+            </xpath>
+            <xpath expr="//page[@name='order_lines']/group/div[hasclass('oe_clear')]/.." position="after">
+                <group string="Payments" groups="account.group_account_invoice">
                     <field
                         name="account_payment_ids"
                         nolabel="1"
                         colspan="4"
-                        context="{'form_view_ref': 'account.view_account_payment_form','tree_view_ref': 'account.view_account_payment_tree'}"
+                        context="{'form_view_ref': 'account.view_account_payment_form','tree_view_ref': 'sale_advance_payment.view_sale_advance_payment_tree'}"
                     />
-                </page>
-            </notebook>
-            <field name="amount_total" position="after">
-                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                    <label for="amount_residual" />
-                </div>
-                <field
-                    name="amount_residual"
-                    nolabel="1"
-                    class="oe_subtotal_footer_separator"
-                    widget="monetary"
-                    options="{'currency_field': 'currency_id'}"
-                />
-            </field>
-            <field name="tag_ids" position="after">
-                <field name="advance_payment_status" />
-            </field>
-        </field>
-    </record>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field
+                            name="left_to_alloc"
+                            widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                        />
+                        <div class="oe_inline oe_subtotal_footer_separator">
+                            <label for="left_to_pay" />
+                        </div>
+                        <field
+                            name="left_to_pay"
+                            nolabel="1"
+                            widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                            class="oe_subtotal_footer_separator"
+                        />
+                    </group>
+                </group>
+            </xpath>
 
-    <record id="view_order_tree" model="ir.ui.view">
-        <field name="name">sale.order.tree</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_tree" />
-        <field name="arch" type="xml">
-            <field name="invoice_status" position="before">
-                <field
-                    name="advance_payment_status"
-                    decoration-success="advance_payment_status == 'paid'"
-                    decoration-info="advance_payment_status == 'partial'"
-                    decoration-warning="advance_payment_status == 'not_paid'"
-                    widget="badge"
-                    optional="hide"
-                />
-            </field>
-            <field name="amount_total" position="after">
-                <field
-                    name="amount_residual"
-                    widget="monetary"
-                    decoration-bf="1"
-                    optional="hide"
-                />
-            </field>
         </field>
     </record>
     <record id="view_quotation_tree" model="ir.ui.view">
@@ -84,7 +62,8 @@
             </field>
             <field name="amount_total" position="after">
                 <field
-                    name="amount_residual"
+                    name="left_to_pay"
+                    sum="Amount Residual"
                     widget="monetary"
                     decoration-bf="1"
                     optional="hide"

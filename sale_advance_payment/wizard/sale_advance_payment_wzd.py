@@ -11,6 +11,11 @@ class AccountVoucherWizard(models.TransientModel):
     _description = "Account Voucher Wizard"
 
     order_id = fields.Many2one("sale.order", required=True)
+    amount_total = fields.Monetary(related="order_id.amount_total")
+    currency_id = fields.Many2one(related="order_id.currency_id")
+    left_to_alloc = fields.Monetary(related="order_id.left_to_alloc")
+
+    payment_ref = fields.Char("Ref.")
     journal_id = fields.Many2one(
         "account.journal",
         "Journal",
@@ -24,8 +29,19 @@ class AccountVoucherWizard(models.TransientModel):
         readonly=False,
         compute="_compute_get_journal_currency",
     )
-    currency_id = fields.Many2one("res.currency", "Currency", readonly=True)
-    amount_total = fields.Monetary("Amount total", readonly=True)
+    compute_advance = fields.Selection(
+        string="Compute Advance",
+        selection=[
+            ("percentage", "Percentage on Order Amount"),
+            ("fixed", "Fixed Amount"),
+            ("balance", "Balance"),
+        ],
+        default="percentage",
+    )
+    percent_advance = fields.Float(
+        string="Advance Percentage",
+        help="Compute Advance amount based on Order total Amount",
+    )
     amount_advance = fields.Monetary(
         "Amount advanced", required=True, currency_field="journal_currency_id"
     )
@@ -33,7 +49,6 @@ class AccountVoucherWizard(models.TransientModel):
     currency_amount = fields.Monetary(
         "Curr. amount", readonly=True, currency_field="currency_id"
     )
-    payment_ref = fields.Char("Ref.")
 
     @api.depends("journal_id")
     def _compute_get_journal_currency(self):
@@ -46,12 +61,12 @@ class AccountVoucherWizard(models.TransientModel):
     def check_amount(self):
         if self.amount_advance <= 0:
             raise exceptions.ValidationError(_("Amount of advance must be positive."))
-        if self.env.context.get("active_id", False):
+        if self.order_id:
             self.onchange_date()
             if (
                 float_compare(
                     self.currency_amount,
-                    self.order_id.amount_residual,
+                    self.order_id.left_to_alloc,
                     precision_digits=2,
                 )
                 > 0
@@ -68,14 +83,9 @@ class AccountVoucherWizard(models.TransientModel):
             return res
         sale_id = fields.first(sale_ids)
         sale = self.env["sale.order"].browse(sale_id)
-        if "amount_total" in fields_list:
-            res.update(
-                {
-                    "order_id": sale.id,
-                    "amount_total": sale.amount_residual,
-                    "currency_id": sale.pricelist_id.currency_id.id,
-                }
-            )
+
+        if "left_to_alloc" in fields_list:
+            res.update({"order_id": sale.id})
 
         return res
 
@@ -85,44 +95,48 @@ class AccountVoucherWizard(models.TransientModel):
             amount_advance = self.journal_currency_id._convert(
                 self.amount_advance,
                 self.currency_id,
-                self.order_id.company_id,
+                self.order_id.company_id or self.env.company,
                 self.date or fields.Date.today(),
             )
         else:
             amount_advance = self.amount_advance
         self.currency_amount = amount_advance
 
-    def _prepare_payment_vals(self, sale):
-        partner_id = sale.partner_invoice_id.commercial_partner_id.id
+    @api.onchange("compute_advance")
+    def _onchange_compute_advance(self):
+        if self.compute_advance == "balance":
+            # TODO : convert in good currency
+            self.amount_advance = self.left_to_alloc
+        if self.compute_advance != "percentage":
+            self.percent_advance = 0
+        if self.compute_advance == "percentage":
+            self.journal_currency_id = self.currency_id
+
+    @api.onchange("percent_advance")
+    def _onchange_percent_advance(self):
+        if self.percent_advance:
+            # TODO : convert in good currency
+            self.amount_advance = self.amount_total * self.percent_advance / 100
+
+    def _prepare_payment_vals(self, order_id):
+        method_id = self.env.ref("account.account_payment_method_manual_in")
         return {
             "date": self.date,
             "amount": self.amount_advance,
             "payment_type": "inbound",
             "partner_type": "customer",
-            "ref": self.payment_ref or sale.name,
+            "ref": self.payment_ref or order_id.name,
             "journal_id": self.journal_id.id,
             "currency_id": self.journal_currency_id.id,
-            "partner_id": partner_id,
-            "payment_method_id": self.env.ref(
-                "account.account_payment_method_manual_in"
-            ).id,
+            "partner_id": order_id.partner_invoice_id.commercial_partner_id.id,
+            "payment_method_id": method_id.id,
+            "sale_id": order_id.id,
         }
 
     def make_advance_payment(self):
-        """Create customer paylines and validates the payment"""
         self.ensure_one()
-        payment_obj = self.env["account.payment"]
-        sale_obj = self.env["sale.order"]
+        if self.order_id:
+            payment_vals = self._prepare_payment_vals(self.order_id)
+            self.env["account.payment"].create(payment_vals)
 
-        sale_ids = self.env.context.get("active_ids", [])
-        if sale_ids:
-            sale_id = fields.first(sale_ids)
-            sale = sale_obj.browse(sale_id)
-            payment_vals = self._prepare_payment_vals(sale)
-            payment = payment_obj.create(payment_vals)
-            sale.account_payment_ids |= payment
-            payment.action_post()
-
-        return {
-            "type": "ir.actions.act_window_close",
-        }
+        return {"type": "ir.actions.act_window_close"}
