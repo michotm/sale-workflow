@@ -18,6 +18,9 @@
             <group name="sale_shipping" position="inside">
                 <field name="manual_delivery" widget="boolean_toggle" />
             </group>
+            <xpath expr="//field[@name='order_line']//tree//field[@name='qty_delivered']" position="before">
+                <field name="qty_planned" string="Planned" decoration-info="(not display_type and invoice_status == 'to invoice')" decoration-bf="(not display_type and invoice_status == 'to invoice')"/>
+            </xpath>
         </field>
     </record>
     <record id="view_order_line_tree" model="ir.ui.view">

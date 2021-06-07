@@ -15,6 +15,12 @@ class SaleOrderLine(models.Model):
         readonly=True,
         store=True,
     )
+    qty_planned = fields.Float(
+        string="Quantity Planned",
+        help="Quantity planned but not shipped (stock movements already created)",
+        compute="_compute_qty_planned",
+        readonly=True,
+    )
     qty_to_procure = fields.Float(
         string="Quantity to Procure",
         help="There is Pending qty to add to a delivery",
@@ -39,6 +45,12 @@ class SaleOrderLine(models.Model):
         for line in self:
             if line.qty_delivered_method == "stock_move":
                 line.qty_procured = line._get_qty_procurement()
+
+
+    @api.depends("qty_procured", "qty_delivered")
+    def _compute_qty_planned(self):
+        for line in self:
+            line.qty_planned = line.qty_procured - line.qty_delivered
 
     @api.depends("product_uom_qty", "qty_procured")
     def _compute_qty_to_procure(self):
