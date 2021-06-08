@@ -17,6 +17,16 @@ class SaleOrder(models.Model):
         "and ship the goods.",
     )
 
+    pending_to_deliver = fields.Boolean(compute="_compute_pending_to_deliver")
+
+    def _compute_pending_to_deliver(self):
+        for order in self:
+            order.pending_to_deliver = True
+            if all(
+                val is False for val in order.mapped("order_line.pending_to_deliver")
+            ):
+                order.pending_to_deliver = False
+
     @api.onchange("team_id")
     def _onchange_team_id(self):
         self.manual_delivery = self.team_id.manual_delivery

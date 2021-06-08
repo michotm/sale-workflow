@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import api, fields, models
+from odoo.tools.float_utils import float_is_zero
 
 
 class SaleOrderLine(models.Model):
@@ -28,6 +29,9 @@ class SaleOrderLine(models.Model):
         store=True,
         readonly=True,
     )
+    pending_to_deliver = fields.Boolean(
+        compute="_compute_qty_to_procure", compute_sudo=True
+    )
 
     @api.depends(
         "move_ids.state",
@@ -46,7 +50,6 @@ class SaleOrderLine(models.Model):
             if line.qty_delivered_method == "stock_move":
                 line.qty_procured = line._get_qty_procurement()
 
-
     @api.depends("qty_procured", "qty_delivered")
     def _compute_qty_planned(self):
         for line in self:
@@ -57,6 +60,12 @@ class SaleOrderLine(models.Model):
         """ Computes the remaining quantity to plan on sale order lines """
         for line in self:
             line.qty_to_procure = line.product_uom_qty - line.qty_procured
+
+            rd = line.company_id.currency_id.rounding
+            if float_is_zero(line.qty_to_procure, precision_rounding=rd):
+                line.pending_to_deliver = False
+            else:
+                line.pending_to_deliver = True
 
     def _get_procurement_group(self):
         # Overload to get the procurement.group for the right date / partner
