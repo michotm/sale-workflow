@@ -11,12 +11,12 @@
                     string="Create Payment"
                     type="action"
                     groups="account.group_account_invoice"
-                    attrs="{'invisible': ['|', ('state', 'in', ['done','cancel']), ('is_allocated', '=', True)]}"
+                    attrs="{'invisible': ['|', '|', ('state', 'in', ['done','cancel']), ('is_allocated', '=', True), ('id', '=', False)]}"
                 />
                 <field name="is_allocated" invisible="1" />
             </xpath>
             <xpath expr="//page[@name='order_lines']/group/div[hasclass('oe_clear')]/.." position="after">
-                <group string="Payments" groups="account.group_account_invoice">
+                <group string="Incoming Payments" groups="account.group_account_invoice">
                     <field
                         name="account_payment_ids"
                         nolabel="1"
