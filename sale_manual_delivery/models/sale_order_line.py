@@ -48,7 +48,9 @@ class SaleOrderLine(models.Model):
         """
         for line in self:
             if line.qty_delivered_method == "stock_move":
-                line.qty_procured = line._get_qty_procurement()
+                line.qty_procured = line._get_qty_procurement(
+                    previous_product_uom_qty=False
+                )
 
     @api.depends("qty_procured", "qty_delivered")
     def _compute_qty_planned(self):
@@ -159,7 +161,6 @@ class SaleOrderLine(models.Model):
     def _action_launch_stock_rule(self, previous_product_uom_qty=False):
         # Overload to skip launching stock rules on manual delivery lines
         # We only launch them when this is called from the manual delivery wizard
-        # Note: sale_manual_delivery is expected to be a manual.delivery record
         manual_delivery_lines = self.filtered("order_id.manual_delivery")
         lines_to_launch = self - manual_delivery_lines
         return super(SaleOrderLine, lines_to_launch)._action_launch_stock_rule(
