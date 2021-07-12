@@ -74,6 +74,9 @@ class ManualDelivery(models.TransientModel):
         ondelete="cascade",
         help="Leave it blank to use the same route that is in the sale line",
     )
+    warehouse_id = fields.Many2one(
+        "stock.warehouse", string="Warehouse", ondelete="cascade",
+    )
     line_ids = fields.One2many(
         "manual.delivery.line", "manual_delivery_id", string="Lines to validate",
     )

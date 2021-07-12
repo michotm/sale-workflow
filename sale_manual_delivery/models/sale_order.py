@@ -35,7 +35,10 @@ class SaleOrder(models.Model):
         self.ensure_one()
         action = self.env.ref("sale_manual_delivery.action_wizard_manual_delivery")
         [action] = action.read()
-        action["context"] = {"default_carrier_id": self.carrier_id.id}
+        action["context"] = {
+            "default_carrier_id": self.carrier_id.id,
+            "default_warehouse_id": self.warehouse_id.id,
+        }
         return action
 
     @api.constrains("manual_delivery")

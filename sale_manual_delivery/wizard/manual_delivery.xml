@@ -19,6 +19,7 @@
                         <group>
                             <field name="carrier_id" />
                             <field name="route_id" groups="stock.group_adv_location" />
+                            <field name="warehouse_id" options="{'no_create': True}" groups="stock.group_stock_multi_warehouses" />
                         </group>
                     </group>
                     <field name='line_ids'>

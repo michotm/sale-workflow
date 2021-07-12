@@ -109,6 +109,9 @@ class SaleOrderLine(models.Model):
             if manual_delivery.route_id:
                 # `_get_stock_move_values` expects a recordset
                 res["route_ids"] = manual_delivery.route_id
+            if manual_delivery.warehouse_id:
+                res["warehouse_id"] = manual_delivery.warehouse_id
+
         return res
 
     def _action_launch_stock_rule_manual(self, previous_product_uom_qty=False):
