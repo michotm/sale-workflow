@@ -33,8 +33,8 @@ class SaleOrder(models.Model):
 
     def action_manual_delivery_wizard(self):
         self.ensure_one()
-        action = self.env.ref("sale_manual_delivery.action_wizard_manual_delivery")
-        [action] = action.read()
+        act_xmlid = "sale_manual_delivery.action_wizard_manual_delivery"
+        action = self.env["ir.actions.actions"]._for_xml_id(act_xmlid)
         action["context"] = {
             "default_carrier_id": self.carrier_id.id,
             "default_warehouse_id": self.warehouse_id.id,
