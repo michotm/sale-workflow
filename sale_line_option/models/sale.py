@@ -58,10 +58,9 @@ class SaleOrderLine(models.Model):
             self._onchange_option()
         return res
 
-    @api.onchange('option_ids')
+    @api.onchange('option_ids', 'option_ids.line_price')
     def _onchange_option(self):
-        if self.product_uom_qty != 0:
-            self.price_unit = sum(self.option_ids.mapped('line_price'))/self.product_uom_qty
+        self._compute_price_unit()
 
     @api.onchange('product_uom', 'product_uom_qty')
     def product_uom_change(self):
@@ -80,6 +79,10 @@ class SaleOrderLine(models.Model):
             (6, 0, [line.id for line in self.option_ids])
         ]
         return res
+
+    def _compute_price_unit(self):
+        if self.product_uom_qty != 0:
+            self.price_unit = sum(self.option_ids.mapped('line_price'))/self.product_uom_qty
 
 
 class SaleOrderLineOption(models.Model):
@@ -169,10 +172,11 @@ class SaleOrderLineOption(models.Model):
             else:
                 record.line_price_unit = 0
                 record.line_price = 0
+            record.sale_line_id._compute_price_unit()
 
     def _is_quantity_valid(self, record):
         """Ensure product_uom_qty <= qty <= max_qty."""
-        # La notion de min max doit être revue car ne correspond 
+        # La notion de min max doit être revue car ne correspond
         # pas au produits sur mesure (atoutcofrage)
         # if not record.bom_line_id:
             # return True
@@ -198,6 +202,7 @@ class SaleOrderLineOption(models.Model):
                         )
                     }
                     }
+            record._compute_price()
 
     @api.onchange('line_price_unit')
     def onchange_line_price_unit(self):
