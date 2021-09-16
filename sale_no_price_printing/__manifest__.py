@@ -8,7 +8,8 @@
     "category": "Sales",
     "depends": ["sale"],
     "data": [
-        "views/menus.xml",
+        "views/sale_report.xml",
+        "views/sale_report_templates.xml",
     ],
     "license": "LGPL-3",
 }
