@@ -22,9 +22,10 @@ class SaleOrder(models.Model):
     def _compute_pending_to_deliver(self):
         for order in self:
             order.pending_to_deliver = True
-            if all(
-                val is False for val in order.mapped("order_line.pending_to_deliver")
-            ):
+            line_shippable = order.order_line.filtered(
+                lambda l: l.product_id.type != "service"
+            )
+            if all(val is False for val in line_shippable.mapped("pending_to_deliver")):
                 order.pending_to_deliver = False
 
     @api.onchange("team_id")
