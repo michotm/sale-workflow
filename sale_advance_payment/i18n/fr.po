@@ -6,15 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 14.0\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-09-20 12:19+0000\n"
-"Last-Translator: Rémi <remi@le-filament.com>\n"
-"Language-Team: none\n"
-"Language: fr\n"
+"POT-Creation-Date: 2021-10-07 09:08+0000\n"
+"PO-Revision-Date: 2021-10-07 09:08+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"Plural-Forms: \n"
 
 #. module: sale_advance_payment
 #: model:ir.model,name:sale_advance_payment.model_account_voucher_wizard
@@ -25,22 +24,32 @@ msgstr "Assistant de Configuration Paiement d'Avance"
 #: model:ir.actions.act_window,name:sale_advance_payment.action_view_account_voucher_wizard
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
 msgid "Advance Payment"
-msgstr "Paiement d'Avance"
+msgstr "Paiement en avance"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__advance_payment_status
 msgid "Advance Payment Status"
-msgstr "Statut du Paiement d'Avance"
+msgstr "Statut du paiement en avance"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__percent_advance
+msgid "Advance Percentage"
+msgstr "Pourcentage"
+
+#. module: sale_advance_payment
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_sale_advance_payment_tree
+msgid "Amount"
+msgstr "Montant"
+
+#. module: sale_advance_payment
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_quotation_tree
+msgid "Amount Residual"
+msgstr "Reste à payer"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__amount_advance
 msgid "Amount advanced"
 msgstr "Montant avancé"
-
-#. module: sale_advance_payment
-#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
-msgid "Amount in Order Currency"
-msgstr "Montant dans la Devise de la Commande"
 
 #. module: sale_advance_payment
 #: code:addons/sale_advance_payment/wizard/sale_advance_payment_wzd.py:0
@@ -56,14 +65,29 @@ msgid "Amount of advance must be positive."
 msgstr "Le montant de l'avance doit être positif."
 
 #. module: sale_advance_payment
-#: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__amount_total
-msgid "Amount total"
-msgstr "Montant total"
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__account_voucher_wizard__compute_advance__balance
+msgid "Balance"
+msgstr ""
 
 #. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
 msgid "Cancel"
 msgstr "Annuler"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__compute_advance
+msgid "Compute Advance"
+msgstr "Calculer l'avance"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,help:sale_advance_payment.field_account_voucher_wizard__percent_advance
+msgid "Compute Advance amount based on Order total Amount"
+msgstr "Calculer le montant de l'avance basé sur le montant total de la Commande"
+
+#. module: sale_advance_payment
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
+msgid "Create Payment"
+msgstr "Créer un Encaissement"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__create_uid
@@ -99,11 +123,26 @@ msgid "Display Name"
 msgstr "Nom affiché"
 
 #. module: sale_advance_payment
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__account_voucher_wizard__compute_advance__fixed
+msgid "Fixed Amount"
+msgstr "Montant fixe"
+
+#. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_payment__id
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__id
 #: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__id
 msgid "ID"
 msgstr ""
+
+#. module: sale_advance_payment
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
+msgid "Incoming Payments"
+msgstr "Encaissements"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__is_allocated
+msgid "Is allocated"
+msgstr "Est alloué"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__journal_id
@@ -133,19 +172,25 @@ msgid "Last Updated on"
 msgstr "Dernière modification le"
 
 #. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__left_to_alloc
+#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__left_to_alloc
+msgid "Leftover to allocate"
+msgstr "Reste à allouer"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__left_to_pay
+msgid "Leftover to pay"
+msgstr "Reste à payer"
+
+#. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
 msgid "Make advance payment"
-msgstr "Enregistrer un paiement d'avance"
+msgstr "Enregistrer un paiement en avance"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__advance_payment_status__not_paid
 msgid "Not Paid"
 msgstr "Non Payé"
-
-#. module: sale_advance_payment
-#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
-msgid "Operation"
-msgstr "Opération"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__order_id
@@ -154,13 +199,8 @@ msgstr "Commande"
 
 #. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
-msgid "Order Currency"
-msgstr "Devise de la Commande"
-
-#. module: sale_advance_payment
-#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
-msgid "Order Due Amount"
-msgstr "Montant dû de la Commande"
+msgid "Order total amount"
+msgstr "Montant total commande"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__advance_payment_status__paid
@@ -174,9 +214,8 @@ msgstr "Partiellement Payé"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__account_payment_ids
-#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
 msgid "Pay sale advanced"
-msgstr "Enregistrer un paiement d'avance"
+msgstr "Enregistrer un paiement en avance"
 
 #. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
@@ -184,9 +223,9 @@ msgid "Payment Method"
 msgstr "Méthode de paiement"
 
 #. module: sale_advance_payment
-#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
-msgid "Payment advances"
-msgstr "Avances de paiement"
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
+msgid "Payment Reference"
+msgstr "Référence paiement"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__payment_line_ids
@@ -199,14 +238,14 @@ msgid "Payments"
 msgstr "Paiements"
 
 #. module: sale_advance_payment
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__account_voucher_wizard__compute_advance__percentage
+msgid "Percentage on Order Amount"
+msgstr "Pourcentage du montant de la commande"
+
+#. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__payment_ref
 msgid "Ref."
 msgstr "Réf."
-
-#. module: sale_advance_payment
-#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__amount_residual
-msgid "Residual amount"
-msgstr "Montant restant"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_payment__sale_id
@@ -216,4 +255,18 @@ msgstr "Vente"
 #. module: sale_advance_payment
 #: model:ir.model,name:sale_advance_payment.model_sale_order
 msgid "Sales Order"
-msgstr "Commandes"
+msgstr "AR de commande"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__amount_total
+msgid "Total"
+msgstr ""
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,help:sale_advance_payment.field_sale_order__is_allocated
+msgid ""
+"True if the Order's payments (draft or posted) equals the Order's total "
+"amount"
+msgstr ""
+"Vrai si les encaissements (brouillons ou comptabilisés) sont égaux au "
+"montant total de la commande"
