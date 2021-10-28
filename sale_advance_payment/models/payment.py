@@ -11,13 +11,3 @@ class AccountPayment(models.Model):
     sale_id = fields.Many2one(
         "sale.order", "Sale", readonly=True, states={"draft": [("readonly", False)]}
     )
-
-    def action_open(self):
-        return {
-            "view_type": "form",
-            "view_mode": "form",
-            "res_model": "account.payment",
-            "res_id": self.id,
-            "type": "ir.actions.act_window",
-            "target": "current",
-        }
