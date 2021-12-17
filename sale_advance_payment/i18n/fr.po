@@ -87,7 +87,7 @@ msgstr "Calculer le montant de l'avance basé sur le montant total de la Command
 #. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
 msgid "Create Payment"
-msgstr "Créer un Encaissement"
+msgstr "Ajouter un paiement en avance"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__create_uid
