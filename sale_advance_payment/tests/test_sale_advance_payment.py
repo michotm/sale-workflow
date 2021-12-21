@@ -11,7 +11,6 @@ class TestSaleAdvancePayment(common.SavepointCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
         # Partners
         cls.res_partner_1 = cls.env["res.partner"].create({"name": "Wood Corner"})
 
@@ -27,11 +26,7 @@ class TestSaleAdvancePayment(common.SavepointCase):
         )
 
         cls.tax = cls.env["account.tax"].create(
-            {
-                "name": "Tax 15",
-                "type_tax_use": "sale",
-                "amount": 20,
-            }
+            {"name": "Tax 15", "type_tax_use": "sale", "amount": 20}
         )
         cls.currency_euro = cls.env["res.currency"].search([("name", "=", "EUR")])
         cls.currency_usd = cls.env["res.currency"].search([("name", "=", "USD")])
@@ -41,8 +36,9 @@ class TestSaleAdvancePayment(common.SavepointCase):
 
         # Sale Order
         cls.sale_order_1 = cls.env["sale.order"].create(
-            {"partner_id": cls.res_partner_1.id, "currency_id": cls.currency_usd.id}
+            {"partner_id": cls.res_partner_1.id}
         )
+        cls.sale_order_1.write({"currency_id": cls.currency_usd.id})
         cls.order_line_1 = cls.env["sale.order.line"].create(
             {
                 "order_id": cls.sale_order_1.id,
@@ -126,27 +122,61 @@ class TestSaleAdvancePayment(common.SavepointCase):
         with self.assertRaises(MissingError):
             pay_1.state
 
-    def test_post_advance_payment(self):
+    def test_advance_payment_and_invoice_payment(self):
         order = self.sale_order_1
+        # TODO: remove this dirty hack to pass test while main company's currency is EUR
+        # (without it, the invoice's currency_id is EUR and it conflicts with order's
+        # currency)
+        order.write({"currency_id": self.currency_euro.id})
+
+        order.action_confirm()
         context_payment = {"active_ids": [order.id], "active_id": order.id}
         advance_payment_1 = (
             self.env["account.voucher.wizard"]
             .with_context(context_payment)
-            .create({"journal_id": self.journal_usd_cash.id, "amount_advance": 100})
+            .create({"journal_id": self.journal_eur_cash.id, "amount_advance": 100})
         )
-        advance_payment_2 = (
-            self.env["account.voucher.wizard"]
-            .with_context(context_payment)
-            .create({"journal_id": self.journal_usd_cash.id, "amount_advance": 200})
-        )
+        # Advance payment draft
         advance_payment_1.make_advance_payment()
-        advance_payment_2.make_advance_payment()
-        self.assertEqual(order.left_to_alloc, 3300)
-
-        pay_1 = order.account_payment_ids.filtered(lambda p: p.amount == 100)
+        self.assertEqual(order.left_to_alloc, 3500)
+        self.assertEqual(order.left_to_pay, 3600)
+        # Advance payment posted
+        pay_1 = order.account_payment_ids
         pay_1.action_post()
+        self.assertEqual(order.left_to_alloc, 3500)
         self.assertEqual(order.left_to_pay, 3500)
-        self.assertEqual(order.left_to_alloc, 3300)
+        # Invoice draft
+        order._create_invoices()
+        invoice_id = order.invoice_ids[0]
+        self.assertEqual(invoice_id.currency_id, self.currency_euro)
+        self.assertEqual(order.left_to_alloc, 0)
+        self.assertEqual(order.left_to_pay, 3500)
+        # Register invoice's payment
+        invoice_id.action_post()
+        inv_context = {"active_ids": [invoice_id.id], "active_model": "account.move"}
+        register_pay_wiz_id = (
+            self.env["account.payment.register"]
+            .with_context(inv_context)
+            .create({"amount": 50})
+        )
+        register_pay_wiz_id.action_create_payments()
+        self.assertEqual(order.left_to_alloc, 0)
+        self.assertEqual(order.left_to_pay, 3450)
+
+    def test_invoice_bank_payment_reconcile(self):
+        order = self.sale_order_1
+        order.write({"currency_id": self.currency_euro.id})
+        order.action_confirm()
+        # Invoice draft
+        order._create_invoices()
+        invoice_id = order.invoice_ids[0]
+        self.assertEqual(invoice_id.currency_id, self.currency_euro)
+        self.assertEqual(order.left_to_alloc, 0)
+        self.assertEqual(order.left_to_pay, 3600)
+        invoice_id.action_post()
+        # TODO: Pay invoice through bank reconciliation
+        # self.assertEqual(order.left_to_alloc, 0)
+        # self.assertEqual(order.left_to_pay, 0)
 
     def test_sale_advance_payment(self):
         self.assertEqual(self.sale_order_1.currency_id, self.currency_usd)
