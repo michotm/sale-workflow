@@ -27,7 +27,7 @@ msgid "Advance Payment"
 msgstr "Paiement en avance"
 
 #. module: sale_advance_payment
-#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__advance_payment_status
+#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__payment_status
 msgid "Advance Payment Status"
 msgstr "Statut du paiement en avance"
 
@@ -188,7 +188,7 @@ msgid "Make advance payment"
 msgstr "Enregistrer un paiement en avance"
 
 #. module: sale_advance_payment
-#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__advance_payment_status__not_paid
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__payment_status__not_paid
 msgid "Not Paid"
 msgstr "Non Payé"
 
@@ -203,12 +203,12 @@ msgid "Order total amount"
 msgstr "Montant total commande"
 
 #. module: sale_advance_payment
-#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__advance_payment_status__paid
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__payment_status__paid
 msgid "Paid"
 msgstr "Payé"
 
 #. module: sale_advance_payment
-#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__advance_payment_status__partial
+#: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__payment_status__partial
 msgid "Partially Paid"
 msgstr "Partiellement Payé"
 

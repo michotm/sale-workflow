@@ -37,7 +37,7 @@ class SaleOrder(models.Model):
         compute="_compute_sale_advance_payment",
         store=True,
     )
-    advance_payment_status = fields.Selection(
+    payment_status = fields.Selection(
         selection=[
             ("not_paid", "Not Paid"),
             ("paid", "Paid"),
@@ -151,7 +151,7 @@ class SaleOrder(models.Model):
             order.payment_line_ids = mls
             order.left_to_alloc = left_to_alloc
             order.left_to_pay = left_to_pay
-            order.advance_payment_status = payment_state
+            order.payment_status = payment_state
             order.is_allocated = is_allocated
 
     @api.depends("invoice_ids.line_ids.matched_credit_ids")
