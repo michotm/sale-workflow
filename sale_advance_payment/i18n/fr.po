@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2021-10-07 09:08+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -25,11 +26,6 @@ msgstr "Assistant de Configuration Paiement d'Avance"
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
 msgid "Advance Payment"
 msgstr "Paiement en avance"
-
-#. module: sale_advance_payment
-#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__payment_status
-msgid "Advance Payment Status"
-msgstr "Statut du paiement en avance"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_account_voucher_wizard__percent_advance
@@ -82,7 +78,8 @@ msgstr "Calculer l'avance"
 #. module: sale_advance_payment
 #: model:ir.model.fields,help:sale_advance_payment.field_account_voucher_wizard__percent_advance
 msgid "Compute Advance amount based on Order total Amount"
-msgstr "Calculer le montant de l'avance basé sur le montant total de la Commande"
+msgstr ""
+"Calculer le montant de l'avance basé sur le montant total de la Commande"
 
 #. module: sale_advance_payment
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
@@ -204,6 +201,7 @@ msgstr "Montant total commande"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields.selection,name:sale_advance_payment.selection__sale_order__payment_status__paid
+#: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_order_form
 msgid "Paid"
 msgstr "Payé"
 
@@ -226,6 +224,12 @@ msgstr "Méthode de paiement"
 #: model_terms:ir.ui.view,arch_db:sale_advance_payment.view_account_voucher_wizard
 msgid "Payment Reference"
 msgstr "Référence paiement"
+
+#. module: sale_advance_payment
+#: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__payment_status
+#, fuzzy
+msgid "Payment Status"
+msgstr "Statut du paiement"
 
 #. module: sale_advance_payment
 #: model:ir.model.fields,field_description:sale_advance_payment.field_sale_order__payment_line_ids
