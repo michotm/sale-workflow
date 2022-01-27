@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2021 Akretion
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+
+    <record id="view_payment_term_form" model="ir.ui.view" >
+        <field name="name">account.payment.term.form (in account_payment_schedule)</field>
+        <field name="model">account.payment.term</field>
+        <field name="inherit_id" ref="account.view_payment_term_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='note']" position="after">
+                <group string="Advance" class="col-12 col-lg-6" >
+                  <label for="advance_percent" string="Percentage"/>
+                  <div class="o_row">
+                      <field name="advance_percent"/><span>%</span>
+                  </div>
+                  <field name="advance_days" string="Days after Order date"/>
+                </group>
+            </xpath>
+            <xpath expr="//separator" position="attributes">
+                <attribute name="string">Invoice payment terms</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
