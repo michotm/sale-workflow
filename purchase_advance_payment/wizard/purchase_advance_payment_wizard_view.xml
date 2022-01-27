@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_account_voucher_wizard" model="ir.ui.view">
+        <field name="name">Advance Payment</field>
+        <field name="model">account.voucher.wizard.purchase</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Advance Payment">
+                <group>
+                    <field name="order_id" invisible="1" />
+                    <field name="currency_id" invisible="1" />
+                    <group class="col-12 col-lg-6">
+                        <field name="compute_advance" widget="radio" />
+                    </group>
+                    <separator/>
+                    <group class="col-12 col-lg-6">
+                        <label for="percent_advance" attrs="{'invisible': [('compute_advance', '!=', 'percentage')]}"/>
+                        <div attrs="{'invisible': [('compute_advance', '!=', 'percentage')]}">
+                            <field name="percent_advance" class="oe_inline" />%%
+                        </div>
+                        <label for="amount_advance" attrs="{'invisible': [('compute_advance', '=', 'percentage')]}"/>
+                        <div class="o_row">
+                            <field name="amount_advance" attrs="{'invisible': [('compute_advance', '=', 'percentage')]}"/>
+                            <field name="journal_currency_id" string="Currency" attrs="{'invisible': [('compute_advance', '=', 'percentage')]}"/>
+                        </div>
+                        <label for="amount_total" string="Order total amount" class="text-muted"/>
+                        <div class="o_row text-muted">
+                            <field
+                                name="amount_total"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
+                            />
+                        </div>
+                        <label for="left_to_alloc" class="text-muted"/>
+                        <div class="o_row text-muted">
+                            <field
+                                name="left_to_alloc"
+                                widget="monetary"
+                                options="{'currency_field': 'currency_id'}"
+                            />
+                        </div>
+                    </group>
+                    <group class="col-12 col-lg-6">
+                        <field name="date" />
+                        <field
+                            name="journal_id"
+                            widget="selection"
+                            string="Payment Method"
+                        />
+                        <field name="payment_ref" string="Payment Reference"/>
+                    </group>
+                </group>
+                <footer>
+                    <button
+                        name="make_advance_payment"
+                        string="Make advance payment"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button special="cancel" string="Cancel" class="btn-default" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_view_account_voucher_wizard" model="ir.actions.act_window">
+        <field name="name">Advance Payment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.voucher.wizard.purchase</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

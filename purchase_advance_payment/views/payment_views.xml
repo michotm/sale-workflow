@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+  <record id="view_purchase_advance_payment_tree" model="ir.ui.view">
+      <field name="name">account.payment.tree (in purchase_advance_payment)</field>
+      <field name="model">account.payment</field>
+      <field name="arch" type="xml">
+          <tree editable="bottom" delete="0" create="0" default_order="date">
+              <field name="date" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+              <field name="name" readonly="1" />
+              <field name="ref" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+              <field name="journal_id" attrs="{'readonly': [('state', '!=', 'draft')]}" domain="[('type', 'in', ['bank', 'cash'])]"/>
+              <field
+                    name="amount"
+                    sum="Amount"
+                    attrs="{'readonly': [('state', '!=', 'draft')]}"
+                />
+              <field name="currency_id" invisible="1"/>
+              <field
+                    name="state"
+                    widget="badge"
+                    decoration-info="state == 'draft'"
+                    decoration-success="state == 'posted'"
+                    class="text-center"
+                />
+              <button
+                    name="unlink"
+                    icon="fa-trash"
+                    type="object"
+                    attrs="{'invisible': [('state', 'not in', ['draft', 'cancel'])]}"
+                    class="oe_edit_only"
+                />
+              <field name="suitable_journal_ids" invisible="1" />
+              <field name="available_payment_method_ids" invisible="1" />
+          </tree>
+      </field>
+  </record>
+
+  <!-- Inherit Form view and add Purchase Order-->
+  <record id="view_account_payment_form" model="ir.ui.view">
+    <field name="name">account.payment.form (in purchase_advance_payment)</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="account.view_account_payment_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='ref']" position="after">
+            <field name="purchase_id" attrs="{'invisible': [('partner_type', '!=', 'supplier')]}"/>
+        </xpath>
+    </field>
+  </record>
+
+  <!-- Inherit Form view and hide header -->
+  <record id="view_account_payment_form_no_header" model="ir.ui.view">
+    <field name="name">account.payment.form.no_header (in purchase_advance_payment)</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="account.view_account_payment_form"/>
+    <field name="mode">primary</field>
+    <field name="arch" type="xml">
+        <xpath expr="//header" position="attributes">
+            <attribute name="invisible">True</attribute>
+        </xpath>
+    </field>
+  </record>
+
+</odoo>
