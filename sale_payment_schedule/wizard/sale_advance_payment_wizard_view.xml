@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form view -->
+    <record id="view_account_voucher_wizard" model="ir.ui.view">
+      <field name="name">Advance Payment (in sale_payment_schedule)</field>
+      <field name="model">account.voucher.wizard</field>
+      <field name="inherit_id" ref="sale_advance_payment.view_account_voucher_wizard"/>
+      <field name="arch" type="xml">
+          <xpath expr="//field[@name='payment_ref']" position="after">
+              <field name="is_advance"/>
+          </xpath>
+      </field>
+    </record>
+</odoo>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2021 Akretion
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+
+    <record id="view_order_form" model="ir.ui.view" >
+      <field name="name">sale.order.form (in sale_payment_schedule)</field>
+      <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_advance_payment.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(sale_advance_payment.action_view_account_voucher_wizard)d']" position="before">
+              <button
+                  name="schedule_payments"
+                  string="Schedule Payments"
+                  type="object"
+                  icon="fa-refresh"
+                  groups="account.group_account_invoice"
+              />
+            </xpath>
+        </field>
+    </record>
+
+
+
+</odoo>
