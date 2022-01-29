@@ -40,7 +40,7 @@ class SaleOrder(models.Model):
             else:
                 self.order_line.filtered(lambda x: x.is_discount_line).with_context(
                     discount_lines=True
-                ).write({"product_uom_qty": 0})
+                ).write({"product_uom_qty": 0, "price_unit": 0})
             if self.global_discount_amount != 0.0:
                 self.env["sale.order.line"]._create_discount_lines(order=self)
         return res
@@ -125,6 +125,8 @@ class SaleOrderLine(models.Model):
                     "product_uom_qty": 1,
                 }
             )
+        else:
+            discount_line.product_uom_qty=1
         discount_line.product_id_change()
         price_unit = discount_line._prepare_discount_line_vals(
             amount_untaxed=amount_untaxed,
@@ -136,6 +138,7 @@ class SaleOrderLine(models.Model):
                 "price_unit": -1 * price_unit,
                 "is_discount_line": True,
                 "tax_id": tax_ids,
+
             }
         )
 
