@@ -521,3 +521,20 @@ class TestSaleGlobalDiscountAmount(SavepointCase):
             lambda x: x.tax_ids == self.vat20
         )
         self.assertEqual(discount_line_20.price_unit, -27.78)
+
+    def test_create_updt_qty_to_zero_on_confirmed_so(self):
+        discount_order_lines = self.env["sale.order.line"].search(
+            [
+                ("product_id", "=", self.discount_product.id),
+                ("order_id", "=", self.sale_single_tax.id),
+            ]
+        )
+        self.sale_single_tax.action_confirm()
+        line_1_id = self.sale_single_tax.order_line.filtered(lambda r: not r.discount)[0].id
+        self.assertTrue(self.sale_single_tax.write({"order_line": [(1, line_1_id, {"product_uom_qty": 0})]}))
+        # self.assertEqual(len(discount_order_lines), 1)
+        # self.assertEqual(discount_order_lines[0].is_discount_line, True)
+        # self.assertEqual(discount_order_lines[0].price_unit, -30.00)
+        # self.assertEqual(discount_order_lines[0].product_uom_qty, 1.0)
+        # self.assertEqual(len(discount_order_lines[0].tax_id), 1)
+        # self.assertEqual(discount_order_lines[0].tax_id[0].name, "TEST 10%")

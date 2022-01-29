@@ -33,9 +33,14 @@ class SaleOrder(models.Model):
             or "order_line" in vals
             or not self.global_discount_ok
         ) and not self.env.context.get("discount_lines", False):
-            self.order_line.filtered(lambda x: x.is_discount_line).with_context(
-                discount_lines=True
-            ).unlink()
+            if self.state == "draft":
+                self.order_line.filtered(lambda x: x.is_discount_line).with_context(
+                    discount_lines=True
+                ).unlink()
+            else:
+                self.order_line.filtered(lambda x: x.is_discount_line).with_context(
+                    discount_lines=True
+                ).write({"product_uom_qty": 0})
             if self.global_discount_amount != 0.0:
                 self.env["sale.order.line"]._create_discount_lines(order=self)
         return res
@@ -87,7 +92,7 @@ class SaleOrderLine(models.Model):
             )
         # create one discount line for the all order lines without price tax
         lines_without_price_tax = order.order_line.filtered(
-            lambda x: x.price_tax == 0.0
+            lambda x: x.price_tax == 0.0 and x.product_uom_qty
         )
         without_tax_base_amount = 0.0
         for line in lines_without_price_tax:
@@ -108,13 +113,18 @@ class SaleOrderLine(models.Model):
         discount_product = self.env.ref(
             "account_global_discount_amount.discount_product"
         )
-        discount_line = self.create(
-            {
-                "product_id": discount_product.id,
-                "order_id": order.id,
-                "product_uom_qty": 1,
-            }
-        )
+        discount_line = self.search([("product_id", "=", discount_product.id),
+                                    ("order_id", "=", order.id),
+                                    ("tax_id", "=", tax_ids[0][2][0])
+                                    ], limit=1)
+        if not len(discount_line):                            
+            discount_line = self.create(
+                {
+                    "product_id": discount_product.id,
+                    "order_id": order.id,
+                    "product_uom_qty": 1,
+                }
+            )
         discount_line.product_id_change()
         price_unit = discount_line._prepare_discount_line_vals(
             amount_untaxed=amount_untaxed,
